@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
+import '../theme/app_icons.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
 
@@ -32,7 +33,7 @@ class WhatsAppButton extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.chat, size: 20, color: Colors.white),
+            const Icon(AppIcons.whatsapp, size: 20, color: Colors.white),
             const SizedBox(width: 8),
             Text(label, style: AppTextStyles.button()),
           ],

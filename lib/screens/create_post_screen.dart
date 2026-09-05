@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
+import '../theme/app_icons.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
 
@@ -19,11 +20,11 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   bool _visibleToAll = true;
 
   static const _categories = [
-    (id: 'religious', label: 'धार्मिक', icon: Icons.local_fire_department),
-    (id: 'gifts', label: 'उपहार', icon: Icons.card_giftcard),
-    (id: 'festivals', label: 'त्योहार', icon: Icons.celebration_outlined),
-    (id: 'quotes', label: 'कोट्स', icon: Icons.format_quote),
-    (id: 'other', label: 'अन्य', icon: Icons.more_horiz),
+    (id: 'religious', label: 'धार्मिक', icon: AppIcons.religious),
+    (id: 'gifts', label: 'उपहार', icon: AppIcons.gifts),
+    (id: 'festivals', label: 'त्योहार', icon: AppIcons.celebration),
+    (id: 'quotes', label: 'कोट्स', icon: AppIcons.quote),
+    (id: 'other', label: 'अन्य', icon: AppIcons.more),
   ];
 
   @override
@@ -145,21 +146,21 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
               runSpacing: AppSpacing.sm,
               children: [
                 _MediaChip(
-                  icon: Icons.camera_alt_outlined,
+                  icon: AppIcons.camera,
                   label: 'फोटो/वीडियो',
                   onTap: () => ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('जल्द आ रहा है')),
                   ),
                 ),
                 _MediaChip(
-                  icon: Icons.gif_box_outlined,
+                  icon: AppIcons.gif,
                   label: 'GIF',
                   onTap: () => ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('जल्द आ रहा है')),
                   ),
                 ),
                 _MediaChip(
-                  icon: Icons.music_note_outlined,
+                  icon: AppIcons.music,
                   label: 'ऑडियो',
                   onTap: () => ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('जल्द आ रहा है')),
@@ -186,7 +187,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
-                      _visibleToAll ? Icons.public : Icons.lock_outline,
+                      _visibleToAll ? AppIcons.globe : AppIcons.lock,
                       size: 16,
                       color: AppColors.primary,
                     ),

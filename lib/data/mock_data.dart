@@ -6,6 +6,7 @@ import '../models/festival.dart';
 import '../models/home_category.dart';
 import '../models/status_item.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_icons.dart';
 
 /// Placeholder data standing in for the real backend/content feed —
 /// no festival photography exists in assets yet, so cards render as
@@ -29,256 +30,256 @@ class MockData {
       id: 'motivation',
       hindiLabel: 'प्रेरणा',
       englishLabel: 'Motivation',
-      icon: Icons.terrain,
+      icon: AppIcons.motivation,
       gradient: [Color(0xFF75665D), Color(0xFFF4B942)],
     ),
     HomeCategory(
       id: 'good-morning',
       hindiLabel: 'शुभ प्रभात',
       englishLabel: 'Good Morning',
-      icon: Icons.wb_sunny,
+      icon: AppIcons.sun,
       gradient: [AppColors.secondary, AppColors.primary],
     ),
     HomeCategory(
       id: 'good-night',
       hindiLabel: 'शुभ रात्रि',
       englishLabel: 'Good Night',
-      icon: Icons.nightlight_round,
+      icon: AppIcons.moon,
       gradient: [Color(0xFF3A2418), Color(0xFF75665D)],
     ),
     HomeCategory(
       id: 'love',
       hindiLabel: 'प्रेम',
       englishLabel: 'Love',
-      icon: Icons.favorite,
+      icon: AppIcons.heartSolid,
       gradient: [Color(0xFFE53935), Color(0xFFF4B942)],
     ),
     HomeCategory(
       id: 'family',
       hindiLabel: 'परिवार',
       englishLabel: 'Family',
-      icon: Icons.groups,
+      icon: AppIcons.family,
       gradient: [Color(0xFFF4B942), Color(0xFF2E9B55)],
     ),
     HomeCategory(
       id: 'birthday',
       hindiLabel: 'जन्मदिन',
       englishLabel: 'Birthday',
-      icon: Icons.cake,
+      icon: AppIcons.birthday,
       gradient: [AppColors.secondary, AppColors.primary],
     ),
     HomeCategory(
       id: 'anniversary',
       hindiLabel: 'वर्षगांठ',
       englishLabel: 'Anniversary',
-      icon: Icons.favorite_border,
+      icon: AppIcons.heartOutline,
       gradient: [Color(0xFFD94300), Color(0xFFF4B942)],
     ),
     HomeCategory(
       id: 'national',
       hindiLabel: 'राष्ट्रीय',
       englishLabel: 'National',
-      icon: Icons.flag,
+      icon: AppIcons.national,
       gradient: [Color(0xFF2E9B55), Color(0xFFF4B942)],
     ),
     HomeCategory(
       id: 'religious',
       hindiLabel: 'धार्मिक',
       englishLabel: 'Religious',
-      icon: Icons.local_fire_department,
+      icon: AppIcons.religious,
       gradient: [AppColors.primary, AppColors.primaryDark],
     ),
     HomeCategory(
       id: 'spiritual',
       hindiLabel: 'आध्यात्मिक',
       englishLabel: 'Spiritual',
-      icon: Icons.self_improvement,
+      icon: AppIcons.spiritual,
       gradient: [Color(0xFF75665D), Color(0xFFF4B942)],
     ),
     HomeCategory(
       id: 'quotes',
       hindiLabel: 'कोट्स',
       englishLabel: 'Quotes',
-      icon: Icons.format_quote,
+      icon: AppIcons.quote,
       gradient: [Color(0xFFD94300), Color(0xFFF4B942)],
     ),
     HomeCategory(
       id: 'thoughts',
       hindiLabel: 'विचार',
       englishLabel: 'Thoughts',
-      icon: Icons.edit_note,
+      icon: AppIcons.thoughts,
       gradient: [Color(0xFF3A2418), Color(0xFF75665D)],
     ),
     HomeCategory(
       id: 'positive-vibes',
       hindiLabel: 'सकारात्मक सोच',
       englishLabel: 'Positive Vibes',
-      icon: Icons.sentiment_satisfied_alt,
+      icon: AppIcons.positiveVibes,
       gradient: [AppColors.secondary, AppColors.primary],
     ),
     HomeCategory(
       id: 'success',
       hindiLabel: 'सफलता',
       englishLabel: 'Success',
-      icon: Icons.emoji_events,
+      icon: AppIcons.success,
       gradient: [Color(0xFFE53935), Color(0xFFF4B942)],
     ),
     HomeCategory(
       id: 'achievement',
       hindiLabel: 'उपलब्धि',
       englishLabel: 'Achievement',
-      icon: Icons.military_tech,
+      icon: AppIcons.achievement,
       gradient: [Color(0xFFD94300), Color(0xFFF4B942)],
     ),
     HomeCategory(
       id: 'strong-mind',
       hindiLabel: 'मजबूत मन',
       englishLabel: 'Strong Mind',
-      icon: Icons.fitness_center,
+      icon: AppIcons.strongMind,
       gradient: [Color(0xFF75665D), Color(0xFFF4B942)],
     ),
     HomeCategory(
       id: 'meditation',
       hindiLabel: 'ध्यान',
       englishLabel: 'Meditation',
-      icon: Icons.spa,
+      icon: AppIcons.meditation,
       gradient: [Color(0xFF2E9B55), Color(0xFFF4B942)],
     ),
     HomeCategory(
       id: 'world',
       hindiLabel: 'विश्व',
       englishLabel: 'World',
-      icon: Icons.public,
+      icon: AppIcons.world,
       gradient: [Color(0xFF2E9B55), AppColors.primary],
     ),
     HomeCategory(
       id: 'kindness',
       hindiLabel: 'दयालुता',
       englishLabel: 'Kindness',
-      icon: Icons.volunteer_activism,
+      icon: AppIcons.kindness,
       gradient: [Color(0xFFE53935), Color(0xFFF4B942)],
     ),
     HomeCategory(
       id: 'support',
       hindiLabel: 'सहयोग',
       englishLabel: 'Support',
-      icon: Icons.handshake,
+      icon: AppIcons.support,
       gradient: [Color(0xFFD94300), Color(0xFFF4B942)],
     ),
     HomeCategory(
       id: 'friendship',
       hindiLabel: 'दोस्ती',
       englishLabel: 'Friendship',
-      icon: Icons.groups_2,
+      icon: AppIcons.friendship,
       gradient: [AppColors.secondary, AppColors.primary],
     ),
     HomeCategory(
       id: 'education',
       hindiLabel: 'शिक्षा',
       englishLabel: 'Education',
-      icon: Icons.school,
+      icon: AppIcons.education,
       gradient: [Color(0xFF3A2418), Color(0xFF75665D)],
     ),
     HomeCategory(
       id: 'home-life',
       hindiLabel: 'घर और जीवन',
       englishLabel: 'Home & Life',
-      icon: Icons.home,
+      icon: AppIcons.homeLife,
       gradient: [Color(0xFFF4B942), Color(0xFF2E9B55)],
     ),
     HomeCategory(
       id: 'baby-kids',
       hindiLabel: 'बच्चे',
       englishLabel: 'Baby & Kids',
-      icon: Icons.child_care,
+      icon: AppIcons.babyKids,
       gradient: [AppColors.secondary, AppColors.primary],
     ),
     HomeCategory(
       id: 'flowers',
       hindiLabel: 'फूल',
       englishLabel: 'Flowers',
-      icon: Icons.local_florist,
+      icon: AppIcons.flowers,
       gradient: [Color(0xFFE53935), Color(0xFFF4B942)],
     ),
     HomeCategory(
       id: 'gifts',
       hindiLabel: 'उपहार',
       englishLabel: 'Gifts',
-      icon: Icons.card_giftcard,
+      icon: AppIcons.gifts,
       gradient: [Color(0xFFD94300), Color(0xFFF4B942)],
     ),
     HomeCategory(
       id: 'celebration',
       hindiLabel: 'उत्सव',
       englishLabel: 'Celebration',
-      icon: Icons.celebration,
+      icon: AppIcons.celebration,
       gradient: [AppColors.primary, AppColors.primaryDark],
     ),
     HomeCategory(
       id: 'memories',
       hindiLabel: 'यादें',
       englishLabel: 'Memories',
-      icon: Icons.photo_camera,
+      icon: AppIcons.memories,
       gradient: [Color(0xFF3A2418), Color(0xFF75665D)],
     ),
     HomeCategory(
       id: 'travel',
       hindiLabel: 'यात्रा',
       englishLabel: 'Travel',
-      icon: Icons.flight_takeoff,
+      icon: AppIcons.travel,
       gradient: [Color(0xFF2E9B55), Color(0xFFF4B942)],
     ),
     HomeCategory(
       id: 'good-day',
       hindiLabel: 'शुभ दिन',
       englishLabel: 'Good Day',
-      icon: Icons.wb_sunny,
+      icon: AppIcons.sun,
       gradient: [AppColors.secondary, AppColors.primary],
     ),
     HomeCategory(
       id: 'rainy-day',
       hindiLabel: 'बारिश का दिन',
       englishLabel: 'Rainy Day',
-      icon: Icons.umbrella,
+      icon: AppIcons.rainyDay,
       gradient: [Color(0xFF2E9B55), Color(0xFF1F6E3C)],
     ),
     HomeCategory(
       id: 'seasons',
       hindiLabel: 'मौसम',
       englishLabel: 'Seasons',
-      icon: Icons.eco,
+      icon: AppIcons.seasons,
       gradient: [Color(0xFFD94300), Color(0xFFF4B942)],
     ),
     HomeCategory(
       id: 'festivals',
       hindiLabel: 'त्योहार',
       englishLabel: 'Festivals',
-      icon: Icons.auto_awesome,
+      icon: AppIcons.festivalsCat,
       gradient: [AppColors.primary, AppColors.primaryDark],
     ),
     HomeCategory(
       id: 'events',
       hindiLabel: 'इवेंट्स',
       englishLabel: 'Events',
-      icon: Icons.event,
+      icon: AppIcons.events,
       gradient: [Color(0xFF75665D), Color(0xFFF4B942)],
     ),
     HomeCategory(
       id: 'party',
       hindiLabel: 'पार्टी',
       englishLabel: 'Party',
-      icon: Icons.celebration,
+      icon: AppIcons.celebration,
       gradient: [Color(0xFFE53935), Color(0xFFF4B942)],
     ),
   ];
 
   static const List<Category> categories = [
-    Category(id: 'all', label: 'सभी', icon: Icons.star),
-    Category(id: 'motivation', label: 'प्रेरणा', icon: Icons.wb_sunny),
-    Category(id: 'gifts', label: 'शुभकामनाएं', icon: Icons.card_giftcard),
-    Category(id: 'festivals', label: 'त्योहार', icon: Icons.celebration),
-    Category(id: 'memories', label: 'चित्र', icon: Icons.photo),
-    Category(id: 'quotes', label: 'कोट्स', icon: Icons.format_quote),
+    Category(id: 'all', label: 'सभी', icon: AppIcons.all),
+    Category(id: 'motivation', label: 'प्रेरणा', icon: AppIcons.sun),
+    Category(id: 'gifts', label: 'शुभकामनाएं', icon: AppIcons.gifts),
+    Category(id: 'festivals', label: 'त्योहार', icon: AppIcons.celebration),
+    Category(id: 'memories', label: 'चित्र', icon: AppIcons.memories),
+    Category(id: 'quotes', label: 'कोट्स', icon: AppIcons.quote),
   ];
 
   static const List<Festival> festivals = [
@@ -289,7 +290,7 @@ class MockData {
       religion: 'हिंदू',
       daysLeft: 12,
       gradient: [AppColors.primary, AppColors.primaryDark],
-      icon: Icons.auto_awesome,
+      icon: AppIcons.festivalsCat,
       imageAsset: 'assets/festivals/ganesh_chaturthi.png',
     ),
     Festival(
@@ -299,7 +300,7 @@ class MockData {
       religion: 'हिंदू',
       daysLeft: 67,
       gradient: [AppColors.secondary, AppColors.primary],
-      icon: Icons.local_fire_department,
+      icon: AppIcons.religious,
       imageAsset: 'assets/festivals/diwali.png',
     ),
     Festival(
@@ -309,7 +310,7 @@ class MockData {
       religion: 'हिंदू',
       daysLeft: 65,
       gradient: [AppColors.secondary, AppColors.primaryDark],
-      icon: Icons.local_fire_department,
+      icon: AppIcons.religious,
       imageAsset: 'assets/festivals/dhanteras.png',
     ),
     Festival(
@@ -319,7 +320,7 @@ class MockData {
       religion: 'हिंदू',
       daysLeft: 39,
       gradient: [Color(0xFFF4B942), Color(0xFFD94300)],
-      icon: Icons.local_florist,
+      icon: AppIcons.flowers,
       imageAsset: 'assets/festivals/navratri.png',
     ),
     Festival(
@@ -329,7 +330,7 @@ class MockData {
       religion: 'हिंदू',
       daysLeft: 7,
       gradient: [Color(0xFF2E9B55), Color(0xFF1F6E3C)],
-      icon: Icons.nightlight_round,
+      icon: AppIcons.moon,
       imageAsset: 'assets/festivals/krishna.png',
     ),
     Festival(
@@ -339,7 +340,7 @@ class MockData {
       religion: 'हिंदू',
       daysLeft: 48,
       gradient: [Color(0xFFF4B942), Color(0xFFD94300)],
-      icon: Icons.wb_sunny,
+      icon: AppIcons.sun,
       imageAsset: 'assets/festivals/dussehra.png',
     ),
     Festival(
@@ -349,7 +350,7 @@ class MockData {
       religion: 'हिंदू',
       daysLeft: 56,
       gradient: [Color(0xFF3A2418), Color(0xFFD94300)],
-      icon: Icons.nightlight_round,
+      icon: AppIcons.moon,
       imageAsset: 'assets/festivals/karva_chauth.png',
     ),
     Festival(
@@ -359,7 +360,7 @@ class MockData {
       religion: 'हिंदू',
       daysLeft: 70,
       gradient: [AppColors.secondary, AppColors.primary],
-      icon: Icons.favorite,
+      icon: AppIcons.heartSolid,
       imageAsset: 'assets/festivals/bhai_dooj.png',
     ),
     Festival(
@@ -369,7 +370,7 @@ class MockData {
       religion: 'हिंदू',
       daysLeft: 142,
       gradient: [Color(0xFF2E9B55), Color(0xFFF4B942)],
-      icon: Icons.wb_sunny,
+      icon: AppIcons.sun,
       imageAsset: 'assets/festivals/makar_sankranti.png',
     ),
     Festival(
@@ -379,7 +380,7 @@ class MockData {
       religion: 'हिंदू',
       daysLeft: 185,
       gradient: [Color(0xFF3A2418), Color(0xFF75665D)],
-      icon: Icons.self_improvement,
+      icon: AppIcons.spiritual,
       imageAsset: 'assets/festivals/maha_shivratri.png',
     ),
     Festival(
@@ -389,7 +390,7 @@ class MockData {
       religion: 'हिंदू',
       daysLeft: 201,
       gradient: [Color(0xFFE53935), Color(0xFFF4B942)],
-      icon: Icons.local_florist,
+      icon: AppIcons.flowers,
       imageAsset: 'assets/festivals/holi.png',
     ),
     Festival(
@@ -399,7 +400,7 @@ class MockData {
       religion: 'हिंदू',
       daysLeft: 349,
       gradient: [AppColors.primaryDark, AppColors.secondary],
-      icon: Icons.favorite,
+      icon: AppIcons.heartSolid,
       imageAsset: 'assets/festivals/raksha_bandhan.png',
     ),
     Festival(
@@ -409,7 +410,7 @@ class MockData {
       religion: 'राष्ट्रीय',
       daysLeft: 154,
       gradient: [Color(0xFF2E9B55), Color(0xFFF4B942)],
-      icon: Icons.flag,
+      icon: AppIcons.national,
       imageAsset: 'assets/festivals/republic_day.png',
     ),
     Festival(
@@ -419,7 +420,7 @@ class MockData {
       religion: 'राष्ट्रीय',
       daysLeft: 355,
       gradient: [Color(0xFF2E9B55), Color(0xFFF4B942)],
-      icon: Icons.flag,
+      icon: AppIcons.national,
       imageAsset: 'assets/festivals/independence_day.png',
     ),
     Festival(
@@ -429,7 +430,7 @@ class MockData {
       religion: 'मुस्लिम',
       daysLeft: 65,
       gradient: [Color(0xFF2E9B55), Color(0xFFF45A0A)],
-      icon: Icons.nightlight_round,
+      icon: AppIcons.moon,
       imageAsset: 'assets/festivals/eid.png',
     ),
     Festival(
@@ -439,7 +440,7 @@ class MockData {
       religion: 'मुस्लिम',
       daysLeft: 66,
       gradient: [Color(0xFF2E9B55), Color(0xFF1F6E3C)],
-      icon: Icons.nightlight_round,
+      icon: AppIcons.moon,
       imageAsset: 'assets/festivals/bakrid.png',
     ),
     Festival(
@@ -449,7 +450,7 @@ class MockData {
       religion: 'सिख',
       daysLeft: 71,
       gradient: [Color(0xFFF4B942), Color(0xFFD94300)],
-      icon: Icons.wb_sunny,
+      icon: AppIcons.sun,
       imageAsset: 'assets/festivals/gurpurab.png',
     ),
     Festival(
@@ -459,7 +460,7 @@ class MockData {
       religion: 'ईसाई',
       daysLeft: 122,
       gradient: [Color(0xFF2E9B55), Color(0xFFF45A0A)],
-      icon: Icons.park,
+      icon: AppIcons.tree,
       imageAsset: 'assets/festivals/christmas.png',
     ),
     Festival(
@@ -469,7 +470,7 @@ class MockData {
       religion: 'ईसाई',
       daysLeft: 236,
       gradient: [Color(0xFF3A2418), Color(0xFFD94300)],
-      icon: Icons.church,
+      icon: AppIcons.church,
       imageAsset: 'assets/festivals/good_friday.png',
     ),
     Festival(
@@ -479,7 +480,7 @@ class MockData {
       religion: 'जैन',
       daysLeft: 240,
       gradient: [AppColors.secondary, Color(0xFFD94300)],
-      icon: Icons.spa,
+      icon: AppIcons.meditation,
       imageAsset: 'assets/festivals/mahavir_jayanti.png',
     ),
     Festival(
@@ -489,7 +490,7 @@ class MockData {
       religion: 'बौद्ध',
       daysLeft: 250,
       gradient: [Color(0xFFF4B942), Color(0xFF2E9B55)],
-      icon: Icons.self_improvement,
+      icon: AppIcons.spiritual,
       imageAsset: 'assets/festivals/buddha_purnima.png',
     ),
   ];
@@ -510,7 +511,7 @@ class MockData {
       festivalName: 'सुविचार',
       text: 'शुभ प्रभात आपका दिन शुभ हो!',
       gradient: const [AppColors.secondary, AppColors.primary],
-      icon: Icons.wb_sunny,
+      icon: AppIcons.sun,
       likeCount: 76,
     ),
     StatusItem(
@@ -528,7 +529,7 @@ class MockData {
       festivalName: 'सुविचार',
       text: 'सकारात्मक सोच ही जीवन में खुशियाँ लाती है।',
       gradient: const [Color(0xFF2E9B55), Color(0xFFF4B942)],
-      icon: Icons.self_improvement,
+      icon: AppIcons.spiritual,
       likeCount: 65,
     ),
     for (final f in festivals.skip(1).take(4))
@@ -544,49 +545,87 @@ class MockData {
       ),
   ];
 
-  static List<StatusItem> statusesForFestival(Festival festival) => [
-    StatusItem(
-      id: '${festival.id}-1',
-      festivalName: festival.name,
-      text: 'Happy ${festival.name}',
-      gradient: festival.gradient,
-      icon: festival.icon,
-      likeCount: 88,
-      festivalId: festival.id,
-      imageAsset: festival.imageAsset,
-    ),
-    StatusItem(
-      id: '${festival.id}-2',
-      festivalName: festival.name,
-      text: '${festival.name} की हार्दिक शुभकामनाएं',
-      gradient: [festival.gradient.last, festival.gradient.first],
-      icon: festival.icon,
-      likeCount: 54,
-      festivalId: festival.id,
-      imageAsset: festival.imageAsset,
-    ),
-    StatusItem(
-      id: '${festival.id}-3',
-      festivalName: festival.name,
-      text: 'Happy ${festival.name}',
-      gradient: festival.gradient,
-      icon: festival.icon,
-      likeCount: 31,
-      isFree: false,
-      festivalId: festival.id,
-      imageAsset: festival.imageAsset,
-    ),
-    StatusItem(
-      id: '${festival.id}-4',
-      festivalName: festival.name,
-      text: '${festival.name} मुबारक हो',
-      gradient: [festival.gradient.last, festival.gradient.first],
-      icon: festival.icon,
-      likeCount: 47,
-      festivalId: festival.id,
-      imageAsset: festival.imageAsset,
-    ),
-  ];
+  /// Extra unique designs generated for the highest-traffic festivals so
+  /// their status grid doesn't show one repeated photo under different
+  /// captions. Falls back to the single collage photo for the rest.
+  static const Map<String, List<String>> _statusVariants = {
+    'ganesh-chaturthi': [
+      'assets/festivals/ganesh_chaturthi.png',
+      'assets/festivals/ganesh_chaturthi_2.png',
+      'assets/festivals/ganesh_chaturthi_3.png',
+      'assets/festivals/ganesh_chaturthi_4.png',
+    ],
+    'diwali': [
+      'assets/festivals/diwali.png',
+      'assets/festivals/diwali_2.png',
+      'assets/festivals/diwali_3.png',
+      'assets/festivals/diwali_4.png',
+    ],
+    'navratri': [
+      'assets/festivals/navratri.png',
+      'assets/festivals/navratri_2.png',
+      'assets/festivals/navratri_3.png',
+      'assets/festivals/navratri_4.png',
+    ],
+    'eid': [
+      'assets/festivals/eid.png',
+      'assets/festivals/eid_2.png',
+    ],
+    'christmas': [
+      'assets/festivals/christmas.png',
+      'assets/festivals/christmas_2.png',
+    ],
+  };
+
+  static List<StatusItem> statusesForFestival(Festival festival) {
+    final variants = _statusVariants[festival.id];
+    String? imageFor(int i) =>
+        variants != null ? variants[i % variants.length] : festival.imageAsset;
+
+    return [
+      StatusItem(
+        id: '${festival.id}-1',
+        festivalName: festival.name,
+        text: 'Happy ${festival.name}',
+        gradient: festival.gradient,
+        icon: festival.icon,
+        likeCount: 88,
+        festivalId: festival.id,
+        imageAsset: imageFor(0),
+      ),
+      StatusItem(
+        id: '${festival.id}-2',
+        festivalName: festival.name,
+        text: '${festival.name} की हार्दिक शुभकामनाएं',
+        gradient: [festival.gradient.last, festival.gradient.first],
+        icon: festival.icon,
+        likeCount: 54,
+        festivalId: festival.id,
+        imageAsset: imageFor(1),
+      ),
+      StatusItem(
+        id: '${festival.id}-3',
+        festivalName: festival.name,
+        text: 'Happy ${festival.name}',
+        gradient: festival.gradient,
+        icon: festival.icon,
+        likeCount: 31,
+        isFree: false,
+        festivalId: festival.id,
+        imageAsset: imageFor(2),
+      ),
+      StatusItem(
+        id: '${festival.id}-4',
+        festivalName: festival.name,
+        text: '${festival.name} मुबारक हो',
+        gradient: [festival.gradient.last, festival.gradient.first],
+        icon: festival.icon,
+        likeCount: 47,
+        festivalId: festival.id,
+        imageAsset: imageFor(3),
+      ),
+    ];
+  }
 
   static const String todaysQuote =
       'सपने वो नहीं जो आप सोते वक्त देखते हैं, सपने वो हैं जो आपको सोने नहीं देते।';

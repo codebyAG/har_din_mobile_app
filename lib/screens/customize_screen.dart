@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../models/festival.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_icons.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
 import '../widgets/festival_image.dart';
@@ -105,7 +106,7 @@ class _CustomizeScreenState extends State<CustomizeScreen> {
               onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('फ़ोटो चुनें (demo)')),
               ),
-              icon: const Icon(Icons.camera_alt_outlined, size: 18),
+              icon: const Icon(AppIcons.camera, size: 18),
               label: const Text('फोटो बदलें'),
             ),
             const SizedBox(height: AppSpacing.sectionGap),

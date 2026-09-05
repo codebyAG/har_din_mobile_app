@@ -1,11 +1,56 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
+import '../theme/app_icons.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
+
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  String _language = 'हिंदी';
+  String _theme = 'लाइट';
+
+  Future<void> _pickOption(String title, List<String> options, String current,
+      ValueChanged<String> onPicked) async {
+    final picked = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: AppColors.card,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetContext) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(AppSpacing.md),
+              child: Text(title, style: AppTextStyles.cardTitle()),
+            ),
+            for (final option in options)
+              ListTile(
+                title: Text(option, style: AppTextStyles.body()),
+                trailing: option == current
+                    ? const Icon(AppIcons.free, color: AppColors.primary, size: 18)
+                    : null,
+                onTap: () => Navigator.of(sheetContext).pop(option),
+              ),
+          ],
+        ),
+      ),
+    );
+    if (picked != null) onPicked(picked);
+  }
+
+  void _snack(String message) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,13 +62,58 @@ class SettingsScreen extends StatelessWidget {
         child: ListView(
           padding: const EdgeInsets.all(AppSpacing.screenPadding),
           children: [
-            _SettingsTile(icon: Icons.person_outline, label: 'अकाउंट सेटिंग'),
-            _SettingsTile(icon: Icons.lock_outline, label: 'प्राइवेसी सेटिंग'),
-            _SettingsTile(icon: Icons.notifications_none, label: 'नोटिफिकेशन'),
-            _SettingsTile(icon: Icons.language, label: 'भाषा', value: 'हिंदी'),
-            _SettingsTile(icon: Icons.dark_mode_outlined, label: 'थीम', value: 'लाइट'),
-            _SettingsTile(icon: Icons.help_outline, label: 'सहायता और सपोर्ट'),
-            _SettingsTile(icon: Icons.info_outline, label: 'ऐप के बारे में'),
+            _SettingsTile(
+              icon: AppIcons.account,
+              label: 'अकाउंट सेटिंग',
+              onTap: () => _snack('अकाउंट सेटिंग जल्द आ रही है'),
+            ),
+            _SettingsTile(
+              icon: AppIcons.privacy,
+              label: 'प्राइवेसी सेटिंग',
+              onTap: () => _snack('प्राइवेसी सेटिंग जल्द आ रही है'),
+            ),
+            _SettingsTile(
+              icon: AppIcons.bell,
+              label: 'नोटिफिकेशन',
+              onTap: () => _snack('नोटिफिकेशन सेटिंग जल्द आ रही है'),
+            ),
+            _SettingsTile(
+              icon: AppIcons.language,
+              label: 'भाषा',
+              value: _language,
+              onTap: () => _pickOption(
+                'भाषा चुनें',
+                ['हिंदी', 'English'],
+                _language,
+                (v) => setState(() => _language = v),
+              ),
+            ),
+            _SettingsTile(
+              icon: AppIcons.theme,
+              label: 'थीम',
+              value: _theme,
+              onTap: () => _pickOption(
+                'थीम चुनें',
+                ['लाइट', 'डार्क', 'सिस्टम'],
+                _theme,
+                (v) => setState(() => _theme = v),
+              ),
+            ),
+            _SettingsTile(
+              icon: AppIcons.help,
+              label: 'सहायता और सपोर्ट',
+              onTap: () => _snack('सहायता जल्द आ रही है'),
+            ),
+            _SettingsTile(
+              icon: AppIcons.about,
+              label: 'ऐप के बारे में',
+              onTap: () => showAboutDialog(
+                context: context,
+                applicationName: 'हर दिन',
+                applicationVersion: '1.0.0',
+                applicationLegalese: 'Har Din, Kuch Share Karo',
+              ),
+            ),
             const SizedBox(height: AppSpacing.lg),
             GestureDetector(
               onTap: () => ScaffoldMessenger.of(context).showSnackBar(
@@ -49,30 +139,39 @@ class _SettingsTile extends StatelessWidget {
   final IconData icon;
   final String label;
   final String? value;
+  final VoidCallback onTap;
 
-  const _SettingsTile({required this.icon, required this.label, this.value});
+  const _SettingsTile({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+    this.value,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: AppSpacing.sm),
-      padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        color: AppColors.card,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, size: 20, color: AppColors.primary),
-          const SizedBox(width: AppSpacing.md),
-          Expanded(child: Text(label, style: AppTextStyles.body())),
-          if (value != null) ...[
-            Text(value!, style: AppTextStyles.secondary()),
-            const SizedBox(width: AppSpacing.xs),
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+        padding: const EdgeInsets.all(AppSpacing.md),
+        decoration: BoxDecoration(
+          color: AppColors.card,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, size: 18, color: AppColors.primary),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(child: Text(label, style: AppTextStyles.body())),
+            if (value != null) ...[
+              Text(value!, style: AppTextStyles.secondary()),
+              const SizedBox(width: AppSpacing.xs),
+            ],
+            const Icon(AppIcons.chevronRight, size: 16, color: AppColors.textSecondary),
           ],
-          const Icon(Icons.chevron_right, color: AppColors.textSecondary),
-        ],
+        ),
       ),
     );
   }

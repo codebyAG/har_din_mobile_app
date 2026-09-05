@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
+import '../theme/app_icons.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
 
@@ -37,7 +38,7 @@ class QuoteCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.format_quote, color: AppColors.primary, size: 28),
+          const Icon(AppIcons.quote, color: AppColors.primary, size: 28),
           const SizedBox(height: AppSpacing.sm),
           Text(quote, style: AppTextStyles.body()),
           const SizedBox(height: AppSpacing.sm),
@@ -53,7 +54,7 @@ class QuoteCard extends StatelessWidget {
                 child: Row(
                   children: [
                     Icon(
-                      isLiked ? Icons.favorite : Icons.favorite_border,
+                      isLiked ? AppIcons.heartSolid : AppIcons.heartOutline,
                       size: 18,
                       color: isLiked ? AppColors.like : AppColors.textSecondary,
                     ),
@@ -66,7 +67,7 @@ class QuoteCard extends StatelessWidget {
               GestureDetector(
                 onTap: onShare,
                 child: const Icon(
-                  Icons.share_outlined,
+                  AppIcons.share,
                   size: 18,
                   color: AppColors.textSecondary,
                 ),
@@ -75,7 +76,7 @@ class QuoteCard extends StatelessWidget {
               GestureDetector(
                 onTap: onSave,
                 child: const Icon(
-                  Icons.bookmark_border,
+                  AppIcons.bookmarkOutline,
                   size: 20,
                   color: AppColors.textSecondary,
                 ),

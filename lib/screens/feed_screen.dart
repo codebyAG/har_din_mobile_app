@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../data/mock_data.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_icons.dart';
 import '../theme/app_spacing.dart';
 import '../widgets/post_card.dart';
 
@@ -28,7 +29,7 @@ class _FeedScreenState extends State<FeedScreen> {
             onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('जल्द आ रहा है')),
             ),
-            icon: const Icon(Icons.search, color: AppColors.textPrimary),
+            icon: const Icon(AppIcons.search, color: AppColors.textPrimary),
           ),
         ],
       ),

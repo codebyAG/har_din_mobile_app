@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../models/feed_post.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_icons.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
 import 'gradient_tile.dart';
@@ -58,8 +59,39 @@ class PostCard extends StatelessWidget {
                 ),
               ),
               IconButton(
-                onPressed: () {},
-                icon: const Icon(Icons.more_horiz, color: AppColors.textSecondary),
+                onPressed: () => showModalBottomSheet(
+                  context: context,
+                  backgroundColor: AppColors.card,
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                  ),
+                  builder: (sheetContext) => SafeArea(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        ListTile(
+                          leading: const Icon(AppIcons.bookmarkOutline),
+                          title: const Text('सेव करें'),
+                          onTap: () {
+                            Navigator.of(sheetContext).pop();
+                            onSave?.call();
+                          },
+                        ),
+                        ListTile(
+                          leading: const Icon(AppIcons.report),
+                          title: const Text('रिपोर्ट करें'),
+                          onTap: () {
+                            Navigator.of(sheetContext).pop();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('रिपोर्ट भेज दी गई')),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                icon: const Icon(AppIcons.more, size: 18, color: AppColors.textSecondary),
               ),
             ],
           ),
@@ -72,13 +104,13 @@ class PostCard extends StatelessWidget {
                 fit: StackFit.expand,
                 children: [
                   post.imageAsset == null
-                      ? GradientTile(colors: post.gradient, icon: Icons.format_quote)
+                      ? GradientTile(colors: post.gradient, icon: AppIcons.quote)
                       : Image.asset(
                           post.imageAsset!,
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) => GradientTile(
                             colors: post.gradient,
-                            icon: Icons.format_quote,
+                            icon: AppIcons.quote,
                           ),
                         ),
                   Positioned.fill(
@@ -119,7 +151,7 @@ class PostCard extends StatelessWidget {
                 child: Row(
                   children: [
                     Icon(
-                      isLiked ? Icons.favorite : Icons.favorite_border,
+                      isLiked ? AppIcons.heartSolid : AppIcons.heartOutline,
                       size: 20,
                       color: isLiked ? AppColors.like : AppColors.textSecondary,
                     ),
@@ -137,7 +169,7 @@ class PostCard extends StatelessWidget {
                 child: Row(
                   children: [
                     const Icon(
-                      Icons.chat_bubble_outline,
+                      AppIcons.comment,
                       size: 19,
                       color: AppColors.textSecondary,
                     ),
@@ -150,7 +182,7 @@ class PostCard extends StatelessWidget {
               GestureDetector(
                 onTap: onShare,
                 child: const Icon(
-                  Icons.share_outlined,
+                  AppIcons.share,
                   size: 19,
                   color: AppColors.textSecondary,
                 ),
@@ -159,7 +191,7 @@ class PostCard extends StatelessWidget {
               GestureDetector(
                 onTap: onSave,
                 child: const Icon(
-                  Icons.bookmark_border,
+                  AppIcons.bookmarkOutline,
                   size: 21,
                   color: AppColors.textSecondary,
                 ),

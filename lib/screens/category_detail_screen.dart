@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../data/mock_data.dart';
 import '../models/home_category.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_icons.dart';
 import '../theme/app_spacing.dart';
 import '../widgets/status_grid_card.dart';
 import 'customize_screen.dart';
@@ -32,7 +33,7 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
             onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('जल्द आ रहा है')),
             ),
-            icon: const Icon(Icons.search, color: AppColors.textPrimary),
+            icon: const Icon(AppIcons.search, color: AppColors.textPrimary),
           ),
         ],
       ),

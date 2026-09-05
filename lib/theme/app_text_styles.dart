@@ -2,15 +2,15 @@ import 'package:flutter/material.dart';
 
 import 'app_colors.dart';
 
-/// Bilingual type scale: Inter for Latin text, Noto Sans Devanagari as the
-/// fallback so Hindi copy renders correctly wherever it appears mixed in.
-/// Both are bundled as local assets (see pubspec.yaml) — no runtime font
-/// download, so the app works fully offline.
+/// Bilingual type scale: Poppins for Latin text, Baloo 2 as the fallback
+/// so Hindi copy renders with a warm, rounded, festive character instead
+/// of a generic system look. Both are bundled as local assets (see
+/// pubspec.yaml) — no runtime font download, so the app works offline.
 class AppTextStyles {
   AppTextStyles._();
 
-  static const String _primaryFont = 'Inter';
-  static const List<String> _devanagariFallback = ['Noto Sans Devanagari'];
+  static const String _primaryFont = 'Poppins';
+  static const List<String> _devanagariFallback = ['Baloo 2'];
 
   static TextStyle _base({
     required double size,

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
+import '../theme/app_icons.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
+import 'saved_screen.dart';
 import 'settings_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -26,27 +28,35 @@ class ProfileScreen extends StatelessWidget {
             child: Column(
               children: [
                 _ProfileMenuTile(
-                  icon: Icons.grid_view_outlined,
+                  icon: AppIcons.grid,
                   label: 'मेरे पोस्ट्स',
-                  onTap: () {},
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const SavedScreen()),
+                  ),
                 ),
                 _ProfileMenuTile(
-                  icon: Icons.bookmark_border,
+                  icon: AppIcons.bookmarkOutline,
                   label: 'सेव्ड',
-                  onTap: () {},
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const SavedScreen()),
+                  ),
                 ),
                 _ProfileMenuTile(
-                  icon: Icons.favorite_border,
+                  icon: AppIcons.heartOutline,
                   label: 'मेरी पसंद',
-                  onTap: () {},
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const SavedScreen()),
+                  ),
                 ),
                 _ProfileMenuTile(
-                  icon: Icons.people_outline,
+                  icon: AppIcons.people,
                   label: 'खोजे गए लोग',
-                  onTap: () {},
+                  onTap: () => ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('जल्द आ रहा है')),
+                  ),
                 ),
                 _ProfileMenuTile(
-                  icon: Icons.settings_outlined,
+                  icon: AppIcons.settingsGear,
                   label: 'सेटिंग',
                   onTap: () => Navigator.of(context).push(
                     MaterialPageRoute(builder: (_) => const SettingsScreen()),
@@ -110,14 +120,14 @@ class _ProfileHeader extends StatelessWidget {
               children: [
                 IconButton(
                   onPressed: onSettings,
-                  icon: const Icon(Icons.settings_outlined, color: Colors.white),
+                  icon: const Icon(AppIcons.settingsGear, color: Colors.white),
                 ),
               ],
             ),
             const CircleAvatar(
               radius: 42,
               backgroundColor: Colors.white,
-              child: Icon(Icons.person, size: 44, color: AppColors.primary),
+              child: Icon(AppIcons.account, size: 44, color: AppColors.primary),
             ),
             const SizedBox(height: AppSpacing.md),
             Text(
@@ -197,7 +207,7 @@ class _ProfileMenuTile extends StatelessWidget {
             Icon(icon, size: 20, color: AppColors.primary),
             const SizedBox(width: AppSpacing.md),
             Expanded(child: Text(label, style: AppTextStyles.body())),
-            const Icon(Icons.chevron_right, color: AppColors.textSecondary),
+            const Icon(AppIcons.chevronRight, color: AppColors.textSecondary),
           ],
         ),
       ),

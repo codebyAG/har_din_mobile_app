@@ -1,0 +1,497 @@
+<title>हर दिन Privacy</title>
+<style>
+  :root {
+    --bg: #fbeeda;
+    --surface: #ffffff;
+    --surface-2: #fff6ea;
+    --border: #e8dccb;
+    --text: #3a2418;
+    --text-secondary: #75665d;
+    --accent: #f45a0a;
+    --accent-deep: #d94300;
+    --gold: #f4b942;
+    --focus: #d94300;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #1c1410;
+      --surface: #241a14;
+      --surface-2: #2b1f17;
+      --border: #3d2f24;
+      --text: #f5ede3;
+      --text-secondary: #c2ac97;
+      --accent: #ff7a3d;
+      --accent-deep: #ffab73;
+      --gold: #f4b942;
+      --focus: #ff7a3d;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #1c1410;
+    --surface: #241a14;
+    --surface-2: #2b1f17;
+    --border: #3d2f24;
+    --text: #f5ede3;
+    --text-secondary: #c2ac97;
+    --accent: #ff7a3d;
+    --accent-deep: #ffab73;
+    --gold: #f4b942;
+    --focus: #ff7a3d;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Inter", -apple-system, "Segoe UI", sans-serif;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a { color: var(--accent-deep); }
+  a:focus-visible, button:focus-visible, .toc a:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  .devanagari { font-family: "Noto Sans Devanagari", "Inter", sans-serif; }
+
+  header.top {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 18px clamp(20px, 5vw, 56px);
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .brand {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    text-decoration: none;
+    color: var(--text);
+  }
+
+  .brand .wordmark {
+    font-family: "Noto Sans Devanagari", sans-serif;
+    font-weight: 700;
+    font-size: 22px;
+    color: var(--accent);
+    letter-spacing: 0.01em;
+  }
+
+  .brand .tag {
+    font-size: 13px;
+    color: var(--text-secondary);
+    letter-spacing: 0.02em;
+  }
+
+  .updated-pill {
+    font-size: 12px;
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+    padding: 5px 12px;
+    border-radius: 100px;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .shell {
+    display: grid;
+    grid-template-columns: 220px minmax(0, 720px);
+    justify-content: center;
+    gap: clamp(24px, 5vw, 72px);
+    padding: clamp(28px, 5vw, 56px) clamp(20px, 5vw, 56px) 80px;
+    max-width: 1180px;
+    margin: 0 auto;
+  }
+
+  nav.toc {
+    position: sticky;
+    top: 84px;
+    align-self: start;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  nav.toc .toc-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-secondary);
+    margin-bottom: 10px;
+  }
+
+  nav.toc a {
+    text-decoration: none;
+    color: var(--text-secondary);
+    font-size: 13.5px;
+    padding: 7px 10px;
+    border-radius: 8px;
+    border-left: 2px solid transparent;
+    transition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+  }
+
+  nav.toc a:hover { color: var(--text); background: var(--surface-2); }
+  nav.toc a.active {
+    color: var(--accent-deep);
+    border-left-color: var(--accent);
+    background: var(--surface-2);
+    font-weight: 600;
+  }
+
+  main {
+    min-width: 0;
+  }
+
+  .hero {
+    margin-bottom: 40px;
+  }
+
+  .hero .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12.5px;
+    color: var(--accent-deep);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+    margin-bottom: 14px;
+  }
+
+  .hero .eyebrow::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+
+  h1 {
+    font-size: clamp(28px, 4vw, 38px);
+    line-height: 1.15;
+    margin: 0 0 12px;
+    text-wrap: balance;
+    letter-spacing: -0.01em;
+  }
+
+  .hero p {
+    color: var(--text-secondary);
+    font-size: 16px;
+    max-width: 62ch;
+    margin: 0;
+  }
+
+  section.card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: clamp(20px, 4vw, 32px);
+    margin-bottom: 18px;
+    scroll-margin-top: 84px;
+  }
+
+  section.card h2 {
+    font-size: 19px;
+    margin: 0 0 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  section.card h2 .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--gold);
+    flex-shrink: 0;
+  }
+
+  section.card p, section.card li {
+    color: var(--text);
+    font-size: 15px;
+    max-width: 68ch;
+  }
+
+  section.card p + p { margin-top: 12px; }
+
+  section.card ul {
+    margin: 10px 0 0;
+    padding-left: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .contact-box {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  .contact-item {
+    flex: 1 1 220px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+  }
+
+  .contact-item .label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+  }
+
+  .contact-item .value {
+    font-size: 14.5px;
+    font-weight: 600;
+    word-break: break-word;
+  }
+
+  .contact-item .value a { color: var(--text); }
+
+  footer.bottom {
+    text-align: center;
+    padding: 32px 20px 48px;
+    color: var(--text-secondary);
+    font-size: 13px;
+  }
+
+  footer.bottom .devanagari {
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 16px;
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  .toc-mobile {
+    display: none;
+  }
+
+  @media (max-width: 860px) {
+    .shell { grid-template-columns: minmax(0, 1fr); }
+    nav.toc { display: none; }
+    .toc-mobile {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 10px;
+      margin-bottom: 28px;
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    .toc-mobile::-webkit-scrollbar { display: none; }
+    .toc-mobile a {
+      flex: 0 0 auto;
+      font-size: 13px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      border: 1px solid var(--border);
+      padding: 7px 14px;
+      border-radius: 100px;
+      white-space: nowrap;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+  }
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@600;700&display=swap">
+
+<header class="top">
+  <a class="brand" href="#top">
+    <span class="wordmark devanagari">हर दिन</span>
+    <span class="tag">Privacy Policy</span>
+  </a>
+  <span class="updated-pill" id="updated-pill">Updated 5 Sept 2026</span>
+</header>
+
+<div class="shell" id="top">
+  <nav class="toc" id="toc" aria-label="Sections">
+    <span class="toc-label">On this page</span>
+    <a href="#overview">Overview</a>
+    <a href="#collect">What we collect</a>
+    <a href="#content">Your photos &amp; text</a>
+    <a href="#sharing">Sharing</a>
+    <a href="#permissions">Permissions</a>
+    <a href="#children">Children's privacy</a>
+    <a href="#changes">Policy changes</a>
+    <a href="#contact">Contact us</a>
+  </nav>
+
+  <main>
+    <div class="hero">
+      <span class="eyebrow">Har Din &middot; Festival Status App</span>
+      <h1>Your privacy, in plain language.</h1>
+      <p>
+        This policy explains what Har Din does — and does not — do with your
+        information. No legal jargon: if a section doesn't apply to how the
+        app currently works, we say so plainly instead of padding it out.
+      </p>
+    </div>
+
+    <div class="toc-mobile">
+      <a href="#overview">Overview</a>
+      <a href="#collect">What we collect</a>
+      <a href="#content">Your content</a>
+      <a href="#sharing">Sharing</a>
+      <a href="#permissions">Permissions</a>
+      <a href="#children">Children</a>
+      <a href="#changes">Changes</a>
+      <a href="#contact">Contact</a>
+    </div>
+
+    <section class="card" id="overview">
+      <h2><span class="dot"></span>Overview</h2>
+      <p>
+        Har Din ("we", "our", "the app") is a festival status, greetings, and
+        quotes app. In its current version, the app works entirely offline
+        using content bundled inside the app itself — festival designs,
+        categories, and quotes are stored on your device, not on a server we
+        operate.
+      </p>
+      <p>
+        That means: no account is required, no personal data is collected by
+        us, and nothing you do inside the app is sent to our servers.
+      </p>
+    </section>
+
+    <section class="card" id="collect">
+      <h2><span class="dot"></span>What we collect</h2>
+      <p>
+        Nothing, at present. Har Din does not use analytics, advertising
+        SDKs, or crash-reporting services that transmit data off your
+        device. We don't ask for your name, phone number, or email to use
+        the app.
+      </p>
+      <p>
+        If a future version adds accounts, cloud sync, or notifications,
+        this section will be updated before that version reaches you — and
+        the "Updated" date at the top of this page will change accordingly.
+      </p>
+    </section>
+
+    <section class="card" id="content">
+      <h2><span class="dot"></span>Your photos &amp; text</h2>
+      <p>
+        When you customize a status — adding your name, a photo, or a short
+        message — that content is composed into an image locally on your
+        device. It is not uploaded to us, and we never see it.
+      </p>
+      <p>
+        The finished image lives in your device's storage (or photo
+        gallery, if you save it there) exactly like any photo you'd take
+        with your camera app.
+      </p>
+    </section>
+
+    <section class="card" id="sharing">
+      <h2><span class="dot"></span>Sharing</h2>
+      <p>
+        Tapping "Share to WhatsApp" or any other share option hands your
+        created image to that app using your device's native share sheet.
+        From that point on, the image is subject to WhatsApp's (or whichever
+        app you chose) own privacy policy — Har Din is not part of that
+        transfer and doesn't retain a copy.
+      </p>
+    </section>
+
+    <section class="card" id="permissions">
+      <h2><span class="dot"></span>Permissions</h2>
+      <p>The app may ask for:</p>
+      <ul>
+        <li><strong>Photos / storage</strong> — so you can add a photo to a status, or save a finished design.</li>
+        <li><strong>Notifications</strong> <em>(planned, not yet active)</em> — to let you know about new festival designs.</li>
+      </ul>
+      <p>
+        Each permission is requested only when you use the feature that
+        needs it, and only for that purpose.
+      </p>
+    </section>
+
+    <section class="card" id="children">
+      <h2><span class="dot"></span>Children's privacy</h2>
+      <p>
+        Har Din does not knowingly collect information from anyone,
+        including children — since it doesn't collect information from
+        anyone at all in its current form.
+      </p>
+    </section>
+
+    <section class="card" id="changes">
+      <h2><span class="dot"></span>Policy changes</h2>
+      <p>
+        As Har Din adds features — accounts, cloud sync, or personalization
+        — this policy will be updated to describe them before they ship.
+        Continuing to use the app after an update means you accept the
+        revised policy. We recommend checking back here occasionally.
+      </p>
+    </section>
+
+    <section class="card" id="contact">
+      <h2><span class="dot"></span>Contact us</h2>
+      <p>Questions about this policy or how the app handles your content:</p>
+      <div class="contact-box">
+        <div class="contact-item">
+          <div class="label">Support email</div>
+          <div class="value"><a href="mailto:support@hardin.app">support@hardin.app</a></div>
+        </div>
+        <div class="contact-item">
+          <div class="label">Phone</div>
+          <div class="value">Add your number here</div>
+        </div>
+        <div class="contact-item">
+          <div class="label">App</div>
+          <div class="value devanagari">हर दिन — Har Din</div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<footer class="bottom">
+  <span class="devanagari">हर दिन</span>
+  Har Din, Kuch Share Karo — this page is the Privacy Policy for the Har Din mobile app.
+</footer>
+
+<script>
+  (function () {
+    var links = Array.prototype.slice.call(document.querySelectorAll('#toc a'));
+    var sections = links.map(function (l) {
+      return document.querySelector(l.getAttribute('href'));
+    });
+
+    function onScroll() {
+      var pos = window.scrollY + 120;
+      var activeIndex = 0;
+      sections.forEach(function (s, i) {
+        if (s && s.offsetTop <= pos) activeIndex = i;
+      });
+      links.forEach(function (l, i) {
+        l.classList.toggle('active', i === activeIndex);
+      });
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+</script>

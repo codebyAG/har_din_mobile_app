@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../models/festival.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_icons.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
 import 'festival_image.dart';
@@ -17,7 +18,7 @@ class FestivalListTile extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(AppSpacing.md),
+        padding: const EdgeInsets.all(AppSpacing.sm),
         decoration: BoxDecoration(
           color: AppColors.card,
           borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
@@ -26,14 +27,14 @@ class FestivalListTile extends StatelessWidget {
         child: Row(
           children: [
             ClipRRect(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(14),
               child: SizedBox(
-                width: 56,
-                height: 56,
+                width: 88,
+                height: 88,
                 child: FestivalImage(
                   festival: festival,
-                  iconSize: 22,
-                  borderRadius: BorderRadius.circular(12),
+                  iconSize: 32,
+                  borderRadius: BorderRadius.circular(14),
                 ),
               ),
             ),
@@ -60,7 +61,7 @@ class FestivalListTile extends StatelessWidget {
               ),
             ),
             const Icon(
-              Icons.chevron_right,
+              AppIcons.chevronRight,
               color: AppColors.textSecondary,
             ),
           ],

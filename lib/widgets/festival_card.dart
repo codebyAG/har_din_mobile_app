@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../models/festival.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_icons.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
 import 'festival_image.dart';
@@ -82,7 +83,7 @@ class FestivalCard extends StatelessWidget {
                         color: AppColors.primary,
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.add, color: Colors.white, size: 18),
+                      child: const Icon(AppIcons.add, color: Colors.white, size: 18),
                     ),
                   ),
                 ],

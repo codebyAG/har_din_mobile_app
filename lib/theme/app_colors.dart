@@ -13,7 +13,7 @@ class AppColors {
   static const Color textPrimary = Color(0xFF3A2418); // Dark Brown
   static const Color textSecondary = Color(0xFF75665D); // Brown Grey
 
-  static const Color background = Color(0xFFFBEEDA); // Warm Cream
+  static const Color background = Color(0xFFFFFFFF); // White (Home's category grid keeps the warm cream separately)
   static const Color card = Color(0xFFFFFFFF); // White
   static const Color lightAccent = Color(0xFFFFF0D2); // Soft Cream
 

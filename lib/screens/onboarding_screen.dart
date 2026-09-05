@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
+import '../theme/app_icons.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
 import '../widgets/primary_button.dart';
@@ -35,13 +36,15 @@ class OnboardingScreen extends StatelessWidget {
               Text(
                 'Har Din, Kuch Share Karo',
                 textAlign: TextAlign.center,
-                style: AppTextStyles.body(color: AppColors.textSecondary),
+                style: AppTextStyles.body(color: AppColors.textPrimary)
+                    .copyWith(fontWeight: FontWeight.w700),
               ),
               const SizedBox(height: AppSpacing.sm),
               Text(
                 'अपने विचार, शुभकामनाएं और खास पल सभी के साथ शेयर करें',
                 textAlign: TextAlign.center,
-                style: AppTextStyles.secondary(),
+                style: AppTextStyles.secondary(color: AppColors.textPrimary)
+                    .copyWith(fontWeight: FontWeight.w700),
               ),
               const SizedBox(height: AppSpacing.xxl),
               Expanded(
@@ -56,7 +59,7 @@ class OnboardingScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
                     ),
                     child: const Icon(
-                      Icons.wb_twilight,
+                      AppIcons.sun,
                       size: 56,
                       color: AppColors.secondary,
                     ),

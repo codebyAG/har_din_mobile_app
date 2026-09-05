@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../models/festival.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_icons.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
 import '../widgets/festival_image.dart';
@@ -97,7 +98,7 @@ class PreviewShareScreen extends StatelessWidget {
                   Expanded(
                     child: SecondaryButton(
                       label: 'डाउनलोड करें',
-                      icon: Icons.download_outlined,
+                      icon: AppIcons.download,
                       onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('डाउनलोड हो रहा है...')),
                       ),
@@ -107,7 +108,7 @@ class PreviewShareScreen extends StatelessWidget {
                   Expanded(
                     child: SecondaryButton(
                       label: 'और विकल्प',
-                      icon: Icons.more_horiz,
+                      icon: AppIcons.more,
                       onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('शेयर विकल्प (demo)')),
                       ),

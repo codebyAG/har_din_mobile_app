@@ -88,6 +88,20 @@ Character count: ~1,450/4000 (comfortable room to expand later)
 
 ## Still needed before submission (not covered by this document)
 
-- **Privacy policy URL** — Play Console requires this even with no backend; a simple one-page "we do not collect personal data" statement hosted anywhere (a GitHub Pages page, a Google Doc published to web, etc.) is enough for now.
 - **Content rating questionnaire** — filled directly in Play Console.
-- **Release signing key** — the app is currently signed with the debug key; Play Console will reject a debug-signed release build.
+- **Release signing key** — done. Signed with `android/keystore/har_din_upload.jks`.
+
+---
+
+## Contact info for Play Console
+
+These go into Play Console → App content / Store settings.
+
+| Field | Value |
+|---|---|
+| Support email | _(pending)_ |
+| Phone number | _(pending)_ |
+| Privacy policy link | https://vocadose.com/har-din/privacy |
+| Account deletion link | https://vocadose.com/har-din/delete-account |
+
+Note: Play Console asks for the account deletion link separately (App content → Data safety) only if the app supports account creation. Har Din doesn't have accounts yet in this release, but it's good to have the page ready for when it does.
