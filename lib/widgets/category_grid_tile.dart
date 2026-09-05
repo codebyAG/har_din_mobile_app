@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 
 import '../models/home_category.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_language.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
 import 'gradient_tile.dart';
 
 /// Category card for the home grid — one solid pastel tile holding a
 /// photo (or gradient placeholder until the real asset is dropped in)
-/// plus a centered bilingual label.
+/// plus a label in whichever language the app is currently set to.
 class CategoryGridTile extends StatelessWidget {
   final HomeCategory category;
   final VoidCallback? onTap;
@@ -47,19 +48,19 @@ class CategoryGridTile extends StatelessWidget {
               ),
             ),
             const SizedBox(height: AppSpacing.xs),
-            Text(
-              category.hindiLabel,
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: AppTextStyles.cardTitle(),
-            ),
-            Text(
-              category.englishLabel,
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: AppTextStyles.secondary(),
+            ValueListenableBuilder<AppLanguage>(
+              valueListenable: AppLanguageController.instance,
+              builder: (context, language, _) {
+                final label = language == AppLanguage.hindi
+                    ? category.hindiLabel
+                    : category.englishLabel;
+                return Text(
+                  label,
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  style: AppTextStyles.cardTitle(),
+                );
+              },
             ),
           ],
         ),

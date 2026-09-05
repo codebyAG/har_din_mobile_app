@@ -17,6 +17,8 @@ class PromoBannerCarousel extends StatefulWidget {
 }
 
 class _PromoBannerCarouselState extends State<PromoBannerCarousel> {
+  static const double _aspectRatio = 1080 / 480;
+
   late final PageController _controller = PageController();
   Timer? _timer;
   int _page = 0;
@@ -44,47 +46,64 @@ class _PromoBannerCarouselState extends State<PromoBannerCarousel> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        AspectRatio(
-          aspectRatio: 1080 / 480,
-          child: PageView.builder(
-            controller: _controller,
-            itemCount: widget.banners.length,
-            onPageChanged: (i) => setState(() => _page = i),
-            itemBuilder: (context, i) {
-              final banner = widget.banners[i];
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
-                child: GestureDetector(
-                  onTap: () => widget.onTap(banner),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-                    child: Image.asset(banner.imageAsset, fit: BoxFit.cover),
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-        const SizedBox(height: AppSpacing.sm),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Compute height from the width the banner actually renders at
+        // (full width minus its own horizontal padding), not the outer
+        // sliver width — otherwise BoxFit.cover crops into a mismatched
+        // box instead of showing the image at its true proportions.
+        final cardWidth = constraints.maxWidth - AppSpacing.screenPadding * 2;
+        final cardHeight = cardWidth / _aspectRatio;
+
+        return Column(
           children: [
-            for (var i = 0; i < widget.banners.length; i++)
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                margin: const EdgeInsets.symmetric(horizontal: 3),
-                width: i == _page ? 18 : 6,
-                height: 6,
-                decoration: BoxDecoration(
-                  color: i == _page ? AppColors.primary : AppColors.border,
-                  borderRadius: BorderRadius.circular(100),
-                ),
+            SizedBox(
+              height: cardHeight,
+              child: PageView.builder(
+                controller: _controller,
+                itemCount: widget.banners.length,
+                onPageChanged: (i) => setState(() => _page = i),
+                itemBuilder: (context, i) {
+                  final banner = widget.banners[i];
+                  return Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
+                    child: GestureDetector(
+                      onTap: () => widget.onTap(banner),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
+                        child: Image.asset(
+                          banner.imageAsset,
+                          width: cardWidth,
+                          height: cardHeight,
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+                    ),
+                  );
+                },
               ),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                for (var i = 0; i < widget.banners.length; i++)
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    margin: const EdgeInsets.symmetric(horizontal: 3),
+                    width: i == _page ? 18 : 6,
+                    height: 6,
+                    decoration: BoxDecoration(
+                      color: i == _page ? AppColors.primary : AppColors.border,
+                      borderRadius: BorderRadius.circular(100),
+                    ),
+                  ),
+              ],
+            ),
           ],
-        ),
-      ],
+        );
+      },
     );
   }
 }

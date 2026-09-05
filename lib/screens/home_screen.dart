@@ -42,9 +42,7 @@ class HomeScreen extends StatelessWidget {
                   child: Row(
                     children: [
                       IconButton(
-                        onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('मेनू जल्द आ रहा है')),
-                        ),
+                        onPressed: () => Scaffold.of(context).openDrawer(),
                         icon: const Icon(AppIcons.menu, size: 20, color: AppColors.textPrimary),
                       ),
                       Expanded(

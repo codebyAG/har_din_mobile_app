@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_icons.dart';
 import '../theme/app_text_styles.dart';
+import '../widgets/app_drawer.dart';
 import '../widgets/glass_container.dart';
 import 'create_post_screen.dart';
 import 'festivals_screen.dart';
@@ -42,6 +43,7 @@ class _RootShellState extends State<RootShell> {
   Widget build(BuildContext context) {
     return Scaffold(
       extendBody: true,
+      drawer: AppDrawer(onSelectTab: (i) => setState(() => _index = i)),
       body: IndexedStack(index: _index, children: _screens),
       bottomNavigationBar: _PremiumNavBar(
         selectedIndex: _index,

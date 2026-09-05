@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
 import '../theme/app_icons.dart';
+import '../theme/app_language.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
 
@@ -13,7 +14,8 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  String _language = 'हिंदी';
+  String _language =
+      AppLanguageController.instance.value == AppLanguage.hindi ? 'हिंदी' : 'English';
   String _theme = 'लाइट';
 
   Future<void> _pickOption(String title, List<String> options, String current,
@@ -85,7 +87,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 'भाषा चुनें',
                 ['हिंदी', 'English'],
                 _language,
-                (v) => setState(() => _language = v),
+                (v) => setState(() {
+                  _language = v;
+                  AppLanguageController.instance.value =
+                      v == 'हिंदी' ? AppLanguage.hindi : AppLanguage.english;
+                }),
               ),
             ),
             _SettingsTile(
