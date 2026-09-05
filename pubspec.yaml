@@ -68,8 +68,9 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/
-    - assets/categories/
-    - assets/festivals/
+    - assets/categories_icons/
+    - assets/festival_icons/
+    - assets/banners/
 
   fonts:
     - family: Poppins

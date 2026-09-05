@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_icons.dart';
 import '../theme/app_text_styles.dart';
+import '../widgets/glass_container.dart';
 import 'create_post_screen.dart';
 import 'festivals_screen.dart';
 import 'home_screen.dart';
@@ -40,6 +41,7 @@ class _RootShellState extends State<RootShell> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBody: true,
       body: IndexedStack(index: _index, children: _screens),
       bottomNavigationBar: _PremiumNavBar(
         selectedIndex: _index,
@@ -80,26 +82,35 @@ class _PremiumNavBar extends StatelessWidget {
         children: [
           Container(
             height: barHeight,
-            padding: EdgeInsets.only(bottom: bottomInset),
             decoration: BoxDecoration(
-              color: AppColors.card,
               borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.textPrimary.withValues(alpha: 0.08),
-                  blurRadius: 20,
+                  color: AppColors.textPrimary.withValues(alpha: 0.1),
+                  blurRadius: 24,
                   offset: const Offset(0, -4),
                 ),
               ],
             ),
-            child: Row(
-              children: [
-                _NavTab(tab: tabs[0], selected: selectedIndex == 0, onTap: () => onTabTap(0)),
-                _NavTab(tab: tabs[1], selected: selectedIndex == 1, onTap: () => onTabTap(1)),
-                const SizedBox(width: 64),
-                _NavTab(tab: tabs[2], selected: selectedIndex == 2, onTap: () => onTabTap(2)),
-                _NavTab(tab: tabs[3], selected: selectedIndex == 3, onTap: () => onTabTap(3)),
-              ],
+            child: GlassContainer(
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+              tint: AppColors.card,
+              tintOpacity: 0.72,
+              border: const Border(
+                top: BorderSide(color: Colors.white, width: 1),
+              ),
+              child: Padding(
+                padding: EdgeInsets.only(bottom: bottomInset),
+                child: Row(
+                  children: [
+                    _NavTab(tab: tabs[0], selected: selectedIndex == 0, onTap: () => onTabTap(0)),
+                    _NavTab(tab: tabs[1], selected: selectedIndex == 1, onTap: () => onTabTap(1)),
+                    const SizedBox(width: 64),
+                    _NavTab(tab: tabs[2], selected: selectedIndex == 2, onTap: () => onTabTap(2)),
+                    _NavTab(tab: tabs[3], selected: selectedIndex == 3, onTap: () => onTabTap(3)),
+                  ],
+                ),
+              ),
             ),
           ),
           Positioned(

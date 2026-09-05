@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
 
 import '../data/mock_data.dart';
+import '../models/promo_banner.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_icons.dart';
 import '../theme/app_spacing.dart';
 import '../widgets/category_grid_tile.dart';
 import '../widgets/festive_glow.dart';
+import '../widgets/promo_banner_carousel.dart';
 import '../widgets/shimmer_box.dart';
 import 'category_detail_screen.dart';
+import 'customize_screen.dart';
+import 'feed_screen.dart';
+import 'status_gallery_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -89,6 +94,15 @@ class HomeScreen extends StatelessWidget {
                     skeleton: _HomeSkeleton(),
                     child: CustomScrollView(
                       slivers: [
+                        SliverPadding(
+                          padding: const EdgeInsets.only(top: AppSpacing.lg),
+                          sliver: SliverToBoxAdapter(
+                            child: PromoBannerCarousel(
+                              banners: MockData.promoBanners,
+                              onTap: (banner) => _onBannerTap(context, banner),
+                            ),
+                          ),
+                        ),
                         const SliverPadding(
                           padding: EdgeInsets.symmetric(vertical: AppSpacing.lg),
                           sliver: SliverToBoxAdapter(
@@ -140,6 +154,37 @@ class HomeScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  void _onBannerTap(BuildContext context, PromoBanner banner) {
+    switch (banner.id) {
+      case 'diwali':
+        final diwali = MockData.festivals.firstWhere(
+          (f) => f.id == 'diwali',
+          orElse: () => MockData.festivals.first,
+        );
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => StatusGalleryScreen(festival: diwali)),
+        );
+        break;
+      case 'customize':
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => CustomizeScreen(festival: MockData.festivals.first),
+          ),
+        );
+        break;
+      case 'quote':
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const FeedScreen()),
+        );
+        break;
+      case 'whatsapp':
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const StatusGalleryScreen()),
+        );
+        break;
+    }
   }
 }
 

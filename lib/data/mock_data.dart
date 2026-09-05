@@ -4,6 +4,7 @@ import '../models/category.dart';
 import '../models/feed_post.dart';
 import '../models/festival.dart';
 import '../models/home_category.dart';
+import '../models/promo_banner.dart';
 import '../models/status_item.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_icons.dart';
@@ -13,6 +14,13 @@ import '../theme/app_icons.dart';
 /// gradient tiles with a symbolic icon instead of real images.
 class MockData {
   MockData._();
+
+  static const List<PromoBanner> promoBanners = [
+    PromoBanner(id: 'diwali', imageAsset: 'assets/banners/carousel-1-diwali.png'),
+    PromoBanner(id: 'customize', imageAsset: 'assets/banners/carousel-2-customize.png'),
+    PromoBanner(id: 'quote', imageAsset: 'assets/banners/carousel-3-quote.png'),
+    PromoBanner(id: 'whatsapp', imageAsset: 'assets/banners/carousel-4-whatsapp.png'),
+  ];
 
   static const List<String> religionFilters = [
     'सभी',
@@ -291,7 +299,7 @@ class MockData {
       daysLeft: 12,
       gradient: [AppColors.primary, AppColors.primaryDark],
       icon: AppIcons.festivalsCat,
-      imageAsset: 'assets/festivals/ganesh_chaturthi.png',
+      imageAsset: 'assets/festival_icons/ganesh-chaturthi.png',
     ),
     Festival(
       id: 'diwali',
@@ -301,7 +309,7 @@ class MockData {
       daysLeft: 67,
       gradient: [AppColors.secondary, AppColors.primary],
       icon: AppIcons.religious,
-      imageAsset: 'assets/festivals/diwali.png',
+      imageAsset: 'assets/festival_icons/diwali.png',
     ),
     Festival(
       id: 'dhanteras',
@@ -311,7 +319,7 @@ class MockData {
       daysLeft: 65,
       gradient: [AppColors.secondary, AppColors.primaryDark],
       icon: AppIcons.religious,
-      imageAsset: 'assets/festivals/dhanteras.png',
+      imageAsset: 'assets/festival_icons/dhanteras.png',
     ),
     Festival(
       id: 'navratri',
@@ -321,7 +329,7 @@ class MockData {
       daysLeft: 39,
       gradient: [Color(0xFFF4B942), Color(0xFFD94300)],
       icon: AppIcons.flowers,
-      imageAsset: 'assets/festivals/navratri.png',
+      imageAsset: 'assets/festival_icons/navratri.png',
     ),
     Festival(
       id: 'krishna-janmashtami',
@@ -331,7 +339,7 @@ class MockData {
       daysLeft: 7,
       gradient: [Color(0xFF2E9B55), Color(0xFF1F6E3C)],
       icon: AppIcons.moon,
-      imageAsset: 'assets/festivals/krishna.png',
+      imageAsset: 'assets/festival_icons/krishna-janmashtami.png',
     ),
     Festival(
       id: 'dussehra',
@@ -341,7 +349,7 @@ class MockData {
       daysLeft: 48,
       gradient: [Color(0xFFF4B942), Color(0xFFD94300)],
       icon: AppIcons.sun,
-      imageAsset: 'assets/festivals/dussehra.png',
+      imageAsset: 'assets/festival_icons/dussehra.png',
     ),
     Festival(
       id: 'karva-chauth',
@@ -351,7 +359,7 @@ class MockData {
       daysLeft: 56,
       gradient: [Color(0xFF3A2418), Color(0xFFD94300)],
       icon: AppIcons.moon,
-      imageAsset: 'assets/festivals/karva_chauth.png',
+      imageAsset: 'assets/festival_icons/karva-chauth.png',
     ),
     Festival(
       id: 'bhai-dooj',
@@ -361,7 +369,7 @@ class MockData {
       daysLeft: 70,
       gradient: [AppColors.secondary, AppColors.primary],
       icon: AppIcons.heartSolid,
-      imageAsset: 'assets/festivals/bhai_dooj.png',
+      imageAsset: 'assets/festival_icons/bhai-dooj.png',
     ),
     Festival(
       id: 'makar-sankranti',
@@ -371,7 +379,7 @@ class MockData {
       daysLeft: 142,
       gradient: [Color(0xFF2E9B55), Color(0xFFF4B942)],
       icon: AppIcons.sun,
-      imageAsset: 'assets/festivals/makar_sankranti.png',
+      imageAsset: 'assets/festival_icons/makar-sankranti.png',
     ),
     Festival(
       id: 'maha-shivratri',
@@ -381,7 +389,7 @@ class MockData {
       daysLeft: 185,
       gradient: [Color(0xFF3A2418), Color(0xFF75665D)],
       icon: AppIcons.spiritual,
-      imageAsset: 'assets/festivals/maha_shivratri.png',
+      imageAsset: 'assets/festival_icons/maha-shivratri.png',
     ),
     Festival(
       id: 'holi',
@@ -391,7 +399,7 @@ class MockData {
       daysLeft: 201,
       gradient: [Color(0xFFE53935), Color(0xFFF4B942)],
       icon: AppIcons.flowers,
-      imageAsset: 'assets/festivals/holi.png',
+      imageAsset: 'assets/festival_icons/holi.png',
     ),
     Festival(
       id: 'raksha-bandhan',
@@ -401,7 +409,7 @@ class MockData {
       daysLeft: 349,
       gradient: [AppColors.primaryDark, AppColors.secondary],
       icon: AppIcons.heartSolid,
-      imageAsset: 'assets/festivals/raksha_bandhan.png',
+      imageAsset: 'assets/festival_icons/raksha-bandhan.png',
     ),
     Festival(
       id: 'republic-day',
@@ -411,7 +419,7 @@ class MockData {
       daysLeft: 154,
       gradient: [Color(0xFF2E9B55), Color(0xFFF4B942)],
       icon: AppIcons.national,
-      imageAsset: 'assets/festivals/republic_day.png',
+      imageAsset: 'assets/festival_icons/republic-day.png',
     ),
     Festival(
       id: 'independence-day',
@@ -421,7 +429,7 @@ class MockData {
       daysLeft: 355,
       gradient: [Color(0xFF2E9B55), Color(0xFFF4B942)],
       icon: AppIcons.national,
-      imageAsset: 'assets/festivals/independence_day.png',
+      imageAsset: 'assets/festival_icons/independence-day.png',
     ),
     Festival(
       id: 'eid',
@@ -431,7 +439,7 @@ class MockData {
       daysLeft: 65,
       gradient: [Color(0xFF2E9B55), Color(0xFFF45A0A)],
       icon: AppIcons.moon,
-      imageAsset: 'assets/festivals/eid.png',
+      imageAsset: 'assets/festival_icons/eid.png',
     ),
     Festival(
       id: 'bakrid',
@@ -441,7 +449,7 @@ class MockData {
       daysLeft: 66,
       gradient: [Color(0xFF2E9B55), Color(0xFF1F6E3C)],
       icon: AppIcons.moon,
-      imageAsset: 'assets/festivals/bakrid.png',
+      imageAsset: 'assets/festival_icons/bakrid.png',
     ),
     Festival(
       id: 'gurpurab',
@@ -451,7 +459,7 @@ class MockData {
       daysLeft: 71,
       gradient: [Color(0xFFF4B942), Color(0xFFD94300)],
       icon: AppIcons.sun,
-      imageAsset: 'assets/festivals/gurpurab.png',
+      imageAsset: 'assets/festival_icons/gurpurab.png',
     ),
     Festival(
       id: 'christmas',
@@ -461,7 +469,7 @@ class MockData {
       daysLeft: 122,
       gradient: [Color(0xFF2E9B55), Color(0xFFF45A0A)],
       icon: AppIcons.tree,
-      imageAsset: 'assets/festivals/christmas.png',
+      imageAsset: 'assets/festival_icons/christmas.png',
     ),
     Festival(
       id: 'good-friday',
@@ -471,7 +479,7 @@ class MockData {
       daysLeft: 236,
       gradient: [Color(0xFF3A2418), Color(0xFFD94300)],
       icon: AppIcons.church,
-      imageAsset: 'assets/festivals/good_friday.png',
+      imageAsset: 'assets/festival_icons/good-friday.png',
     ),
     Festival(
       id: 'mahavir-jayanti',
@@ -481,7 +489,7 @@ class MockData {
       daysLeft: 240,
       gradient: [AppColors.secondary, Color(0xFFD94300)],
       icon: AppIcons.meditation,
-      imageAsset: 'assets/festivals/mahavir_jayanti.png',
+      imageAsset: 'assets/festival_icons/mahavir-jayanti.png',
     ),
     Festival(
       id: 'buddha-purnima',
@@ -491,7 +499,7 @@ class MockData {
       daysLeft: 250,
       gradient: [Color(0xFFF4B942), Color(0xFF2E9B55)],
       icon: AppIcons.spiritual,
-      imageAsset: 'assets/festivals/buddha_purnima.png',
+      imageAsset: 'assets/festival_icons/buddha-purnima.png',
     ),
   ];
 
@@ -550,29 +558,29 @@ class MockData {
   /// captions. Falls back to the single collage photo for the rest.
   static const Map<String, List<String>> _statusVariants = {
     'ganesh-chaturthi': [
-      'assets/festivals/ganesh_chaturthi.png',
+      'assets/festival_icons/ganesh-chaturthi.png',
       'assets/festivals/ganesh_chaturthi_2.png',
       'assets/festivals/ganesh_chaturthi_3.png',
       'assets/festivals/ganesh_chaturthi_4.png',
     ],
     'diwali': [
-      'assets/festivals/diwali.png',
+      'assets/festival_icons/diwali.png',
       'assets/festivals/diwali_2.png',
       'assets/festivals/diwali_3.png',
       'assets/festivals/diwali_4.png',
     ],
     'navratri': [
-      'assets/festivals/navratri.png',
+      'assets/festival_icons/navratri.png',
       'assets/festivals/navratri_2.png',
       'assets/festivals/navratri_3.png',
       'assets/festivals/navratri_4.png',
     ],
     'eid': [
-      'assets/festivals/eid.png',
+      'assets/festival_icons/eid.png',
       'assets/festivals/eid_2.png',
     ],
     'christmas': [
-      'assets/festivals/christmas.png',
+      'assets/festival_icons/christmas.png',
       'assets/festivals/christmas_2.png',
     ],
   };

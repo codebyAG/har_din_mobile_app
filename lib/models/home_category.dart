@@ -15,7 +15,7 @@ class HomeCategory {
     required this.gradient,
   });
 
-  /// Drop a matching image at this path (e.g. assets/categories/love.png)
+  /// Drop a matching image at this path (e.g. assets/categories_icons/love.png)
   /// and it renders automatically — falls back to a gradient tile until then.
-  String get assetPath => 'assets/categories/$id.png';
+  String get assetPath => 'assets/categories_icons/$id.png';
 }
