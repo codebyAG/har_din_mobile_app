@@ -120,7 +120,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                             ),
                           ),
                           child: Image.asset(
-                            'assets/categories/${category.id}.png',
+                            'assets/categories_icons/${category.id}.png',
                             fit: BoxFit.contain,
                             color: selected ? Colors.white : null,
                             errorBuilder: (context, error, stackTrace) => Icon(

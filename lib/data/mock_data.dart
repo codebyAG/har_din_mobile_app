@@ -553,43 +553,7 @@ class MockData {
       ),
   ];
 
-  /// Extra unique designs generated for the highest-traffic festivals so
-  /// their status grid doesn't show one repeated photo under different
-  /// captions. Falls back to the single collage photo for the rest.
-  static const Map<String, List<String>> _statusVariants = {
-    'ganesh-chaturthi': [
-      'assets/festival_icons/ganesh-chaturthi.png',
-      'assets/festivals/ganesh_chaturthi_2.png',
-      'assets/festivals/ganesh_chaturthi_3.png',
-      'assets/festivals/ganesh_chaturthi_4.png',
-    ],
-    'diwali': [
-      'assets/festival_icons/diwali.png',
-      'assets/festivals/diwali_2.png',
-      'assets/festivals/diwali_3.png',
-      'assets/festivals/diwali_4.png',
-    ],
-    'navratri': [
-      'assets/festival_icons/navratri.png',
-      'assets/festivals/navratri_2.png',
-      'assets/festivals/navratri_3.png',
-      'assets/festivals/navratri_4.png',
-    ],
-    'eid': [
-      'assets/festival_icons/eid.png',
-      'assets/festivals/eid_2.png',
-    ],
-    'christmas': [
-      'assets/festival_icons/christmas.png',
-      'assets/festivals/christmas_2.png',
-    ],
-  };
-
   static List<StatusItem> statusesForFestival(Festival festival) {
-    final variants = _statusVariants[festival.id];
-    String? imageFor(int i) =>
-        variants != null ? variants[i % variants.length] : festival.imageAsset;
-
     return [
       StatusItem(
         id: '${festival.id}-1',
@@ -599,7 +563,7 @@ class MockData {
         icon: festival.icon,
         likeCount: 88,
         festivalId: festival.id,
-        imageAsset: imageFor(0),
+        imageAsset: festival.imageAsset,
       ),
       StatusItem(
         id: '${festival.id}-2',
@@ -609,7 +573,7 @@ class MockData {
         icon: festival.icon,
         likeCount: 54,
         festivalId: festival.id,
-        imageAsset: imageFor(1),
+        imageAsset: festival.imageAsset,
       ),
       StatusItem(
         id: '${festival.id}-3',
@@ -620,7 +584,7 @@ class MockData {
         likeCount: 31,
         isFree: false,
         festivalId: festival.id,
-        imageAsset: imageFor(2),
+        imageAsset: festival.imageAsset,
       ),
       StatusItem(
         id: '${festival.id}-4',
@@ -630,7 +594,7 @@ class MockData {
         icon: festival.icon,
         likeCount: 47,
         festivalId: festival.id,
-        imageAsset: imageFor(3),
+        imageAsset: festival.imageAsset,
       ),
     ];
   }

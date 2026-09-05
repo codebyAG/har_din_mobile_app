@@ -13,7 +13,7 @@ class StatusItem {
   /// matching customize flow instead of an unrelated one.
   final String? festivalId;
 
-  /// Real photo, e.g. assets/festivals/diwali.png — falls back to the
+  /// Real photo, e.g. assets/festival_icons/diwali.png — falls back to the
   /// gradient + icon tile when null or missing.
   final String? imageAsset;
 

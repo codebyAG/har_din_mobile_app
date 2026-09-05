@@ -9,7 +9,7 @@ class Festival {
   final List<Color> gradient;
   final IconData icon;
 
-  /// Real photo, e.g. assets/festivals/diwali.png — falls back to the
+  /// Real photo, e.g. assets/festival_icons/diwali.png — falls back to the
   /// gradient + icon tile when null or missing.
   final String? imageAsset;
 
