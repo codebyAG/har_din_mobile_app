@@ -15,13 +15,13 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   static const int _maxLength = 500;
 
   final _textController = TextEditingController();
-  String _selectedCategory = 'diwali';
+  String _selectedCategory = 'religious';
   bool _visibleToAll = true;
 
   static const _categories = [
-    (id: 'diwali', label: 'दिवाली', icon: Icons.local_fire_department),
-    (id: 'wishes', label: 'शुभकामनाएं', icon: Icons.card_giftcard),
-    (id: 'festival', label: 'त्योहार', icon: Icons.celebration_outlined),
+    (id: 'religious', label: 'धार्मिक', icon: Icons.local_fire_department),
+    (id: 'gifts', label: 'उपहार', icon: Icons.card_giftcard),
+    (id: 'festivals', label: 'त्योहार', icon: Icons.celebration_outlined),
     (id: 'quotes', label: 'कोट्स', icon: Icons.format_quote),
     (id: 'other', label: 'अन्य', icon: Icons.more_horiz),
   ];
@@ -110,6 +110,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                         Container(
                           width: 52,
                           height: 52,
+                          padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
                             color: selected ? AppColors.primary : AppColors.card,
                             shape: BoxShape.circle,
@@ -117,10 +118,15 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                               color: selected ? AppColors.primary : AppColors.border,
                             ),
                           ),
-                          child: Icon(
-                            category.icon,
-                            color: selected ? Colors.white : AppColors.primary,
-                            size: 24,
+                          child: Image.asset(
+                            'assets/categories/${category.id}.png',
+                            fit: BoxFit.contain,
+                            color: selected ? Colors.white : null,
+                            errorBuilder: (context, error, stackTrace) => Icon(
+                              category.icon,
+                              color: selected ? Colors.white : AppColors.primary,
+                              size: 24,
+                            ),
                           ),
                         ),
                         const SizedBox(height: AppSpacing.xs),

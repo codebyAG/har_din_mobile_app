@@ -40,7 +40,19 @@ class StatusGridCard extends StatelessWidget {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              GradientTile(colors: status.gradient, icon: status.icon, iconSize: 30),
+              status.imageAsset == null
+                  ? GradientTile(colors: status.gradient, icon: status.icon, iconSize: 30)
+                  : Image.asset(
+                      status.imageAsset!,
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                      height: double.infinity,
+                      errorBuilder: (context, error, stackTrace) => GradientTile(
+                        colors: status.gradient,
+                        icon: status.icon,
+                        iconSize: 30,
+                      ),
+                    ),
               Positioned.fill(
                 child: DecoratedBox(
                   decoration: BoxDecoration(

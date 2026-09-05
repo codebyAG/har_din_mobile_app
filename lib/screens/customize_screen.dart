@@ -4,6 +4,7 @@ import '../models/festival.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
+import '../widgets/festival_image.dart';
 import '../widgets/gradient_tile.dart';
 import '../widgets/primary_button.dart';
 import 'preview_share_screen.dart';
@@ -66,11 +67,13 @@ class _CustomizeScreenState extends State<CustomizeScreen> {
                 child: Stack(
                   children: [
                     Positioned.fill(
-                      child: GradientTile(
-                        colors: _backgroundOptions[_selectedBackgroundIndex],
-                        icon: widget.festival.icon,
-                        iconSize: 56,
-                      ),
+                      child: _selectedBackgroundIndex == 0
+                          ? FestivalImage(festival: widget.festival, iconSize: 56)
+                          : GradientTile(
+                              colors: _backgroundOptions[_selectedBackgroundIndex],
+                              icon: widget.festival.icon,
+                              iconSize: 56,
+                            ),
                     ),
                     if (_nameController.text.isNotEmpty)
                       Positioned(
@@ -162,12 +165,18 @@ class _CustomizeScreenState extends State<CustomizeScreen> {
                         ),
                       ),
                       clipBehavior: Clip.antiAlias,
-                      child: GradientTile(
-                        colors: _backgroundOptions[i],
-                        icon: widget.festival.icon,
-                        iconSize: 18,
-                        borderRadius: BorderRadius.circular(11),
-                      ),
+                      child: i == 0
+                          ? FestivalImage(
+                              festival: widget.festival,
+                              iconSize: 18,
+                              borderRadius: BorderRadius.circular(11),
+                            )
+                          : GradientTile(
+                              colors: _backgroundOptions[i],
+                              icon: widget.festival.icon,
+                              iconSize: 18,
+                              borderRadius: BorderRadius.circular(11),
+                            ),
                     ),
                   );
                 },
@@ -189,6 +198,7 @@ class _CustomizeScreenState extends State<CustomizeScreen> {
                   builder: (_) => PreviewShareScreen(
                     festival: widget.festival,
                     gradient: _backgroundOptions[_selectedBackgroundIndex],
+                    useFestivalImage: _selectedBackgroundIndex == 0,
                     name: _nameController.text,
                     message: _messageController.text,
                   ),

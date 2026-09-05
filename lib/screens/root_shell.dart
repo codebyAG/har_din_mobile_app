@@ -56,7 +56,7 @@ class _RootShellState extends State<RootShell> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.add_circle, color: AppColors.primary, size: 32),
-            label: '',
+            label: 'पोस्ट करें',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.favorite_border),

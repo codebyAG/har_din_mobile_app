@@ -4,6 +4,7 @@ import '../models/festival.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
+import '../widgets/festival_image.dart';
 import '../widgets/gradient_tile.dart';
 import '../widgets/secondary_button.dart';
 import '../widgets/whatsapp_button.dart';
@@ -11,6 +12,7 @@ import '../widgets/whatsapp_button.dart';
 class PreviewShareScreen extends StatelessWidget {
   final Festival festival;
   final List<Color> gradient;
+  final bool useFestivalImage;
   final String name;
   final String message;
 
@@ -18,6 +20,7 @@ class PreviewShareScreen extends StatelessWidget {
     super.key,
     required this.festival,
     required this.gradient,
+    this.useFestivalImage = false,
     required this.name,
     required this.message,
   });
@@ -44,11 +47,13 @@ class PreviewShareScreen extends StatelessWidget {
                   child: Stack(
                     children: [
                       Positioned.fill(
-                        child: GradientTile(
-                          colors: gradient,
-                          icon: festival.icon,
-                          iconSize: 64,
-                        ),
+                        child: useFestivalImage
+                            ? FestivalImage(festival: festival, iconSize: 64)
+                            : GradientTile(
+                                colors: gradient,
+                                icon: festival.icon,
+                                iconSize: 64,
+                              ),
                       ),
                       Positioned(
                         left: AppSpacing.lg,
@@ -101,8 +106,8 @@ class PreviewShareScreen extends StatelessWidget {
                   const SizedBox(width: AppSpacing.sm),
                   Expanded(
                     child: SecondaryButton(
-                      label: 'और शेयर करें',
-                      icon: Icons.share_outlined,
+                      label: 'और विकल्प',
+                      icon: Icons.more_horiz,
                       onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('शेयर विकल्प (demo)')),
                       ),

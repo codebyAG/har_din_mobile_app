@@ -31,8 +31,8 @@ class ProfileScreen extends StatelessWidget {
                   onTap: () {},
                 ),
                 _ProfileMenuTile(
-                  icon: Icons.download_outlined,
-                  label: 'मेरे डाउनलोड',
+                  icon: Icons.bookmark_border,
+                  label: 'सेव्ड',
                   onTap: () {},
                 ),
                 _ProfileMenuTile(

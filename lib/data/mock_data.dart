@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../models/category.dart';
+import '../models/feed_post.dart';
 import '../models/festival.dart';
 import '../models/home_category.dart';
 import '../models/status_item.dart';
@@ -273,11 +274,11 @@ class MockData {
 
   static const List<Category> categories = [
     Category(id: 'all', label: 'सभी', icon: Icons.star),
-    Category(id: 'diwali', label: 'दिवाली', icon: Icons.local_fire_department),
-    Category(id: 'wishes', label: 'शुभकामनाएं', icon: Icons.card_giftcard),
-    Category(id: 'birthday', label: 'जन्मदिन', icon: Icons.cake),
-    Category(id: 'greetings', label: 'बधाई', icon: Icons.local_florist),
-    Category(id: 'quotes', label: 'विश', icon: Icons.format_quote),
+    Category(id: 'motivation', label: 'प्रेरणा', icon: Icons.wb_sunny),
+    Category(id: 'gifts', label: 'शुभकामनाएं', icon: Icons.card_giftcard),
+    Category(id: 'festivals', label: 'त्योहार', icon: Icons.celebration),
+    Category(id: 'memories', label: 'चित्र', icon: Icons.photo),
+    Category(id: 'quotes', label: 'कोट्स', icon: Icons.format_quote),
   ];
 
   static const List<Festival> festivals = [
@@ -501,6 +502,8 @@ class MockData {
       gradient: festivals[0].gradient,
       icon: festivals[0].icon,
       likeCount: 98,
+      festivalId: festivals[0].id,
+      imageAsset: festivals[0].imageAsset,
     ),
     StatusItem(
       id: 'status-2',
@@ -517,6 +520,8 @@ class MockData {
       gradient: festivals[0].gradient,
       icon: festivals[0].icon,
       likeCount: 112,
+      festivalId: festivals[0].id,
+      imageAsset: festivals[0].imageAsset,
     ),
     StatusItem(
       id: 'status-4',
@@ -534,6 +539,8 @@ class MockData {
         gradient: f.gradient,
         icon: f.icon,
         likeCount: 40 + f.daysLeft % 60,
+        festivalId: f.id,
+        imageAsset: f.imageAsset,
       ),
   ];
 
@@ -545,6 +552,8 @@ class MockData {
       gradient: festival.gradient,
       icon: festival.icon,
       likeCount: 88,
+      festivalId: festival.id,
+      imageAsset: festival.imageAsset,
     ),
     StatusItem(
       id: '${festival.id}-2',
@@ -553,6 +562,8 @@ class MockData {
       gradient: [festival.gradient.last, festival.gradient.first],
       icon: festival.icon,
       likeCount: 54,
+      festivalId: festival.id,
+      imageAsset: festival.imageAsset,
     ),
     StatusItem(
       id: '${festival.id}-3',
@@ -562,6 +573,8 @@ class MockData {
       icon: festival.icon,
       likeCount: 31,
       isFree: false,
+      festivalId: festival.id,
+      imageAsset: festival.imageAsset,
     ),
     StatusItem(
       id: '${festival.id}-4',
@@ -570,10 +583,51 @@ class MockData {
       gradient: [festival.gradient.last, festival.gradient.first],
       icon: festival.icon,
       likeCount: 47,
+      festivalId: festival.id,
+      imageAsset: festival.imageAsset,
     ),
   ];
 
   static const String todaysQuote =
       'सपने वो नहीं जो आप सोते वक्त देखते हैं, सपने वो हैं जो आपको सोने नहीं देते।';
   static const String todaysQuoteAuthor = 'ए.पी.जे. अब्दुल कलाम';
+
+  static List<FeedPost> get feedPosts => [
+    FeedPost(
+      id: 'post-1',
+      authorName: 'रोहित शर्मा',
+      timeAgo: '2 घंटे पहले',
+      text: '$todaysQuote\n- $todaysQuoteAuthor',
+      gradient: const [AppColors.secondary, AppColors.primary],
+      imageAsset: 'assets/onboarding_sunset.png',
+      likeCount: 125,
+      comments: const [
+        FeedComment(
+          author: 'नेहा वर्मा',
+          timeAgo: '1 घंटा पहले',
+          text: 'बहुत सुंदर विचार! धन्यवाद 🙏❤️',
+        ),
+      ],
+    ),
+    FeedPost(
+      id: 'post-2',
+      authorName: 'अभिषेक गोयल',
+      timeAgo: '5 घंटे पहले',
+      text: 'Happy ${festivals[0].name}\n${festivals[0].name} की हार्दिक शुभकामनाएं!',
+      gradient: festivals[0].gradient,
+      imageAsset: festivals[0].imageAsset,
+      likeCount: 89,
+      comments: const [
+        FeedComment(author: 'रोहित शर्मा', timeAgo: '3 घंटे पहले', text: 'शुभकामनाएं! 🙏'),
+      ],
+    ),
+    FeedPost(
+      id: 'post-3',
+      authorName: 'नेहा वर्मा',
+      timeAgo: '1 दिन पहले',
+      text: 'सकारात्मक सोच ही जीवन में खुशियाँ लाती है।',
+      gradient: const [Color(0xFF2E9B55), Color(0xFFF4B942)],
+      likeCount: 65,
+    ),
+  ];
 }

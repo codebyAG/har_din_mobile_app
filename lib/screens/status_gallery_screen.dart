@@ -15,8 +15,8 @@ class StatusGalleryScreen extends StatefulWidget {
 }
 
 class _StatusGalleryScreenState extends State<StatusGalleryScreen> {
-  static const _tabs = ['ट्रेंडिंग', 'लोकप्रिय', 'वीडियो', 'कोट्स'];
-  String _selectedTab = 'ट्रेंडिंग';
+  static const _tabs = ['लेटेस्ट', 'लोकप्रिय', 'वीडियो', 'कोट्स'];
+  String _selectedTab = 'लेटेस्ट';
   final Set<String> _liked = {};
 
   @override

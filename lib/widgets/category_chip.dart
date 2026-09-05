@@ -27,6 +27,7 @@ class CategoryChip extends StatelessWidget {
           Container(
             width: 52,
             height: 52,
+            padding: const EdgeInsets.all(9),
             decoration: BoxDecoration(
               color: selected ? AppColors.primary : AppColors.card,
               shape: BoxShape.circle,
@@ -34,10 +35,15 @@ class CategoryChip extends StatelessWidget {
                 color: selected ? AppColors.primary : AppColors.border,
               ),
             ),
-            child: Icon(
-              category.icon,
-              color: selected ? Colors.white : AppColors.primary,
-              size: 24,
+            child: Image.asset(
+              'assets/categories/${category.id}.png',
+              fit: BoxFit.contain,
+              color: selected ? Colors.white : null,
+              errorBuilder: (context, error, stackTrace) => Icon(
+                category.icon,
+                color: selected ? Colors.white : AppColors.primary,
+                size: 24,
+              ),
             ),
           ),
           const SizedBox(height: AppSpacing.xs),

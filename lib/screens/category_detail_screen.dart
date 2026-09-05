@@ -63,7 +63,12 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
               }),
               onTap: () => Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (_) => CustomizeScreen(festival: MockData.festivals.first),
+                  builder: (_) => CustomizeScreen(
+                    festival: MockData.festivals.firstWhere(
+                      (f) => f.id == status.festivalId,
+                      orElse: () => MockData.festivals.first,
+                    ),
+                  ),
                 ),
               ),
             );
