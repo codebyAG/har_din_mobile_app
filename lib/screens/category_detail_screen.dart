@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../core/services/search_service.dart';
 import '../core/services/time_band_service.dart';
 import '../core/utils/design_mapper.dart';
 import '../data/mock_data.dart';
@@ -25,6 +26,44 @@ class CategoryDetailScreen extends StatefulWidget {
 
 class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
   final Set<String> _liked = {};
+  String _query = '';
+
+  Future<void> _search(BuildContext context) async {
+    final controller = TextEditingController(text: _query);
+    final result = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: AppColors.card,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetContext) => Padding(
+        padding: EdgeInsets.only(
+          left: AppSpacing.lg,
+          right: AppSpacing.lg,
+          top: AppSpacing.lg,
+          bottom: MediaQuery.of(sheetContext).viewInsets.bottom + AppSpacing.lg,
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: TextField(
+                controller: controller,
+                autofocus: true,
+                textInputAction: TextInputAction.search,
+                decoration: const InputDecoration(hintText: 'जैसे "deepavali", "gm"...'),
+                onSubmitted: (v) => Navigator.of(sheetContext).pop(v),
+              ),
+            ),
+            IconButton(
+              onPressed: () => Navigator.of(sheetContext).pop(controller.text),
+              icon: const Icon(AppIcons.search, color: AppColors.primary),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (result != null) setState(() => _query = result.trim());
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,10 +76,15 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
           .where((d) => d.categoryId == widget.category.id)
           .where((d) => d.matchesBand(band))
           .toList();
+      if (_query.isNotEmpty) {
+        designs = SearchService.search(_query, designs, payload.tags);
+      }
     }
 
-    final usingReal = designs.isNotEmpty;
-    final statuses = usingReal ? designs.map(DesignMapper.toStatusItem).toList() : MockData.trendingStatuses;
+    final usingReal = designs.isNotEmpty || (payload != null && _query.isNotEmpty);
+    final statuses = usingReal
+        ? designs.map(DesignMapper.toStatusItem).toList()
+        : (_query.isNotEmpty ? const [] : MockData.trendingStatuses);
     final designById = {for (final d in designs) d.id: d};
 
     return Scaffold(
@@ -49,9 +93,7 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
         title: Text('${widget.category.hindiLabel} स्टेटस'),
         actions: [
           IconButton(
-            onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('जल्द आ रहा है')),
-            ),
+            onPressed: () => _search(context),
             icon: const Icon(AppIcons.search, color: AppColors.textPrimary),
           ),
         ],
@@ -61,7 +103,9 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
         child: statuses.isEmpty
             ? Center(
                 child: Text(
-                  'इस श्रेणी में अभी कोई स्टेटस नहीं है',
+                  _query.isNotEmpty
+                      ? 'कोई परिणाम नहीं मिला'
+                      : 'इस श्रेणी में अभी कोई स्टेटस नहीं है',
                   style: TextStyle(color: AppColors.textSecondary),
                 ),
               )

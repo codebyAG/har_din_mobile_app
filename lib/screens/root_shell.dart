@@ -11,6 +11,7 @@ import '../widgets/app_drawer.dart';
 import '../widgets/glass_container.dart';
 import 'festivals_screen.dart';
 import 'home_screen.dart';
+import 'language_select_screen.dart';
 import 'profile_screen.dart';
 import 'saved_screen.dart';
 
@@ -28,6 +29,7 @@ class RootShell extends StatefulWidget {
 class _RootShellState extends State<RootShell> {
   int _index = 0;
   bool _loadTriggered = false;
+  bool _languageMissingHandled = false;
 
   final _screens = const [
     HomeScreen(),
@@ -61,6 +63,20 @@ class _RootShellState extends State<RootShell> {
 
   @override
   Widget build(BuildContext context) {
+    // §10 — a 404 on version/content means the selected language no
+    // longer exists server-side. Re-prompt for language choice instead
+    // of silently showing stale/empty content forever.
+    final languageMissing = context.watch<ContentViewModel>().languageMissing;
+    if (languageMissing && !_languageMissingHandled) {
+      _languageMissingHandled = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const LanguageSelectScreen()),
+        );
+      });
+    }
+
     return Scaffold(
       extendBody: true,
       drawer: AppDrawer(onSelectTab: (i) => setState(() => _index = i)),

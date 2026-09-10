@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../core/services/image_cache_service.dart';
 import '../presentation/providers/app_language_controller.dart';
 import '../presentation/providers/content_view_model.dart';
 import '../theme/app_colors.dart';
@@ -138,6 +139,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 applicationVersion: '1.0.0',
                 applicationLegalese: 'Har Din, Kuch Share Karo',
               ),
+            ),
+            _SettingsTile(
+              icon: AppIcons.download,
+              label: 'कैश खाली करें',
+              onTap: () async {
+                await ImageCacheService.instance.emptyCache();
+                if (!context.mounted) return;
+                _snack('कैश खाली कर दिया गया');
+              },
             ),
             // Logout removed — no accounts in v1 (§5).
           ],
