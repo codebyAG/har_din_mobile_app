@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../models/home_category.dart';
+import '../presentation/providers/app_language_controller.dart';
 import '../theme/app_colors.dart';
-import '../theme/app_language.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
 import 'gradient_tile.dart';
@@ -48,10 +49,9 @@ class CategoryGridTile extends StatelessWidget {
               ),
             ),
             const SizedBox(height: AppSpacing.xs),
-            ValueListenableBuilder<AppLanguage>(
-              valueListenable: AppLanguageController.instance,
-              builder: (context, language, _) {
-                final label = language == AppLanguage.hindi
+            Consumer<AppLanguageController>(
+              builder: (context, controller, _) {
+                final label = controller.language == AppLanguage.hindi
                     ? category.hindiLabel
                     : category.englishLabel;
                 return Text(

@@ -37,6 +37,14 @@ dependencies:
   font_awesome_flutter: ^10.9.1
   shimmer: ^3.0.0
   share_plus: ^13.3.0
+  http: ^1.6.0
+  shared_preferences: ^2.5.5
+  path_provider: ^2.1.6
+  cached_network_image: ^3.4.1
+  gal: ^2.3.3
+  uuid: ^4.6.0
+  flutter_cache_manager: ^3.4.2
+  provider: ^6.1.5+1
 
 dev_dependencies:
   flutter_test:

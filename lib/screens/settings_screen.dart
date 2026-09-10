@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../presentation/providers/app_language_controller.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_icons.dart';
-import '../theme/app_language.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
 
@@ -14,8 +15,6 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  String _language =
-      AppLanguageController.instance.value == AppLanguage.hindi ? 'हिंदी' : 'English';
   String _theme = 'लाइट';
 
   Future<void> _pickOption(String title, List<String> options, String current,
@@ -79,20 +78,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
               label: 'नोटिफिकेशन',
               onTap: () => _snack('नोटिफिकेशन सेटिंग जल्द आ रही है'),
             ),
-            _SettingsTile(
-              icon: AppIcons.language,
-              label: 'भाषा',
-              value: _language,
-              onTap: () => _pickOption(
-                'भाषा चुनें',
-                ['हिंदी', 'English'],
-                _language,
-                (v) => setState(() {
-                  _language = v;
-                  AppLanguageController.instance.value =
-                      v == 'हिंदी' ? AppLanguage.hindi : AppLanguage.english;
-                }),
-              ),
+            Consumer<AppLanguageController>(
+              builder: (context, controller, _) {
+                final currentLabel =
+                    controller.language == AppLanguage.hindi ? 'हिंदी' : 'English';
+                return _SettingsTile(
+                  icon: AppIcons.language,
+                  label: 'भाषा',
+                  value: currentLabel,
+                  onTap: () => _pickOption(
+                    'भाषा चुनें',
+                    ['हिंदी', 'English'],
+                    currentLabel,
+                    (v) => context.read<AppLanguageController>().setLanguage(
+                          v == 'हिंदी' ? AppLanguage.hindi : AppLanguage.english,
+                        ),
+                  ),
+                );
+              },
             ),
             _SettingsTile(
               icon: AppIcons.theme,
