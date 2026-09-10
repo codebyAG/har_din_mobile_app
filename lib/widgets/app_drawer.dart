@@ -5,7 +5,6 @@ import '../theme/app_colors.dart';
 import '../theme/app_icons.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
-import '../screens/feed_screen.dart';
 import '../screens/settings_screen.dart';
 
 /// Real navigation drawer for the app — every item does something.
@@ -69,11 +68,7 @@ class AppDrawer extends StatelessWidget {
               label: 'प्रोफाइल',
               onTap: () => _goToTab(context, 3),
             ),
-            _DrawerTile(
-              icon: AppIcons.quote,
-              label: 'फ़ीड',
-              onTap: () => _push(context, const FeedScreen()),
-            ),
+            // Feed is unreachable in v1 — no posts, no comments, no users (§5).
             const Divider(height: 1, indent: AppSpacing.lg, endIndent: AppSpacing.lg),
             _DrawerTile(
               icon: AppIcons.settingsGear,

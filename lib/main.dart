@@ -30,7 +30,8 @@ class MyApp extends StatelessWidget {
           ),
         ),
         ChangeNotifierProvider<ContentViewModel>(
-          create: (context) => ContentViewModel(context.read<ContentRepositoryImpl>()),
+          create: (context) =>
+              ContentViewModel(context.read<ContentRepositoryImpl>()),
         ),
         ChangeNotifierProvider<AppLanguageController>(
           create: (_) => AppLanguageController(),

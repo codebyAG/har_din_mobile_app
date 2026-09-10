@@ -1,17 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../core/utils/occasion_mapper.dart';
 import '../data/mock_data.dart';
+import '../models/festival.dart';
+import '../presentation/providers/content_view_model.dart';
 import '../theme/app_colors.dart';
-import '../theme/app_icons.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
 import '../widgets/festival_list_tile.dart';
 import '../widgets/festive_glow.dart';
 import '../widgets/religion_filter_chip.dart';
 import '../widgets/shimmer_box.dart';
-import 'customize_screen.dart';
 import 'status_gallery_screen.dart';
 
+/// Reads live `occasions[]` from [ContentViewModel] when present, falling
+/// back to the bundled mock festival list otherwise (§4) — never blank.
 class FestivalsScreen extends StatefulWidget {
   const FestivalsScreen({super.key});
 
@@ -24,11 +28,17 @@ class _FestivalsScreenState extends State<FestivalsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final payload = context.watch<ContentViewModel>().payload;
+    final occasions = payload?.occasions ?? const [];
+
+    final allFestivals = occasions.isNotEmpty
+        ? (occasions.map(OccasionMapper.fromOccasion).toList()
+          ..sort((a, b) => a.daysLeft.compareTo(b.daysLeft)))
+        : MockData.festivals;
+
     final festivals = _selectedReligion == 'सभी'
-        ? MockData.festivals
-        : MockData.festivals
-            .where((f) => f.religion == _selectedReligion)
-            .toList();
+        ? allFestivals
+        : allFestivals.where((f) => f.religion == _selectedReligion).toList();
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -90,27 +100,34 @@ class _FestivalsScreenState extends State<FestivalsScreen> {
                         borderRadius: BorderRadius.all(Radius.circular(16)),
                       ),
                     ),
-                    child: ListView.separated(
-                      padding: const EdgeInsets.fromLTRB(
-                        AppSpacing.screenPadding,
-                        0,
-                        AppSpacing.screenPadding,
-                        AppSpacing.sectionGap,
-                      ),
-                      itemCount: festivals.length,
-                      separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.sm),
-                      itemBuilder: (context, i) {
-                        final festival = festivals[i];
-                        return FestivalListTile(
-                          festival: festival,
-                          onTap: () => Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => StatusGalleryScreen(festival: festival),
+                    child: festivals.isEmpty
+                        ? Center(
+                            child: Text(
+                              'इस श्रेणी में अभी कोई त्योहार नहीं है',
+                              style: AppTextStyles.secondary(),
                             ),
+                          )
+                        : ListView.separated(
+                            padding: const EdgeInsets.fromLTRB(
+                              AppSpacing.screenPadding,
+                              0,
+                              AppSpacing.screenPadding,
+                              AppSpacing.sectionGap,
+                            ),
+                            itemCount: festivals.length,
+                            separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.sm),
+                            itemBuilder: (context, i) {
+                              final Festival festival = festivals[i];
+                              return FestivalListTile(
+                                festival: festival,
+                                onTap: () => Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) => StatusGalleryScreen(festival: festival),
+                                  ),
+                                ),
+                              );
+                            },
                           ),
-                        );
-                      },
-                    ),
                   ),
                 ),
               ],
@@ -118,15 +135,7 @@ class _FestivalsScreenState extends State<FestivalsScreen> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: AppColors.primary,
-        onPressed: () => Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (_) => CustomizeScreen(festival: festivals.first),
-          ),
-        ),
-        child: const Icon(AppIcons.add, color: Colors.white),
-      ),
+      // Floating "+" removed — it opened Customize, disabled in v1 (§5).
     );
   }
 }

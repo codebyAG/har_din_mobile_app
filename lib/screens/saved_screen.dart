@@ -45,9 +45,13 @@ class _SavedScreenState extends State<SavedScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final creations = _selectedTab == 'फेवरेट'
-        ? _creations.where((c) => _favorited.contains(c.festival.id)).toList()
-        : _creations;
+    // कस्टमाइज़्ड tab — always empty, "coming soon" in v1: no editor
+    // exists yet to have customized anything into (§5).
+    final creations = switch (_selectedTab) {
+      'फेवरेट' => _creations.where((c) => _favorited.contains(c.festival.id)).toList(),
+      'कस्टमाइज़्ड' => const <_MyCreation>[],
+      _ => _creations,
+    };
 
     return ColoredBox(
       color: AppColors.background,
@@ -284,9 +288,11 @@ class _EmptyState extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
-              tab == 'फेवरेट'
-                  ? 'दिल के निशान पर टैप करके स्टेटस को फेवरेट बनाएं।'
-                  : 'यहाँ आपके बनाए हुए स्टेटस दिखेंगे।',
+              switch (tab) {
+                'फेवरेट' => 'दिल के निशान पर टैप करके स्टेटस को फेवरेट बनाएं।',
+                'कस्टमाइज़्ड' => 'कस्टमाइज़ फीचर जल्द आ रहा है।',
+                _ => 'यहाँ आपके बनाए हुए स्टेटस दिखेंगे।',
+              },
               textAlign: TextAlign.center,
               style: AppTextStyles.secondary(),
             ),

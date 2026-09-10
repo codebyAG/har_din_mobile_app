@@ -17,6 +17,10 @@ class StatusItem {
   /// gradient + icon tile when null or missing.
   final String? imageAsset;
 
+  /// Real `designs[].thumbnail_url` — network, takes priority over
+  /// [imageAsset] when set. Null for every mock status.
+  final String? imageUrl;
+
   const StatusItem({
     required this.id,
     required this.festivalName,
@@ -27,5 +31,6 @@ class StatusItem {
     this.isFree = true,
     this.festivalId,
     this.imageAsset,
+    this.imageUrl,
   });
 }

@@ -1,11 +1,12 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
+import '../core/services/image_cache_service.dart';
 import '../models/status_item.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_icons.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
-import 'free_badge.dart';
 import 'gradient_tile.dart';
 
 class StatusGridCard extends StatelessWidget {
@@ -14,7 +15,6 @@ class StatusGridCard extends StatelessWidget {
   final VoidCallback? onTap;
   final VoidCallback? onLike;
   final VoidCallback? onUse;
-  final VoidCallback? onCustomize;
   final double width;
 
   const StatusGridCard({
@@ -24,13 +24,12 @@ class StatusGridCard extends StatelessWidget {
     this.onTap,
     this.onLike,
     this.onUse,
-    this.onCustomize,
     this.width = 160,
   });
 
   @override
   Widget build(BuildContext context) {
-    final showActions = onUse != null || onCustomize != null;
+    final showActions = onUse != null;
 
     return GestureDetector(
       onTap: onTap,
@@ -49,19 +48,33 @@ class StatusGridCard extends StatelessWidget {
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  status.imageAsset == null
-                      ? GradientTile(colors: status.gradient, icon: status.icon, iconSize: 30)
-                      : Image.asset(
-                          status.imageAsset!,
-                          fit: BoxFit.cover,
-                          width: double.infinity,
-                          height: double.infinity,
-                          errorBuilder: (context, error, stackTrace) => GradientTile(
-                            colors: status.gradient,
-                            icon: status.icon,
-                            iconSize: 30,
-                          ),
-                        ),
+                  if (status.imageUrl != null)
+                    CachedNetworkImage(
+                      imageUrl: status.imageUrl!,
+                      cacheManager: ImageCacheService.instance,
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                      height: double.infinity,
+                      errorWidget: (context, url, error) => GradientTile(
+                        colors: status.gradient,
+                        icon: status.icon,
+                        iconSize: 30,
+                      ),
+                    )
+                  else if (status.imageAsset != null)
+                    Image.asset(
+                      status.imageAsset!,
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                      height: double.infinity,
+                      errorBuilder: (context, error, stackTrace) => GradientTile(
+                        colors: status.gradient,
+                        icon: status.icon,
+                        iconSize: 30,
+                      ),
+                    )
+                  else
+                    GradientTile(colors: status.gradient, icon: status.icon, iconSize: 30),
                   Positioned.fill(
                     child: DecoratedBox(
                       decoration: BoxDecoration(
@@ -77,13 +90,7 @@ class StatusGridCard extends StatelessWidget {
                       ),
                     ),
                   ),
-                  Positioned(
-                    top: 8,
-                    left: 8,
-                    child: status.isFree
-                        ? const FreeBadge()
-                        : const _PremiumBadge(),
-                  ),
+                  // FREE/PREMIUM badge removed — no paywall exists in v1 (§5).
                   if (onLike != null)
                     Positioned(
                       top: 6,
@@ -119,27 +126,15 @@ class StatusGridCard extends StatelessWidget {
                 ],
               ),
             ),
+            // CUSTOMIZE removed from the card — disabled/"coming soon" in
+            // v2 (§5); USE is the sole, full-width action now.
             if (showActions)
               Padding(
                 padding: const EdgeInsets.all(AppSpacing.xs),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: _ActionPill(
-                        label: 'USE',
-                        color: AppColors.success,
-                        onTap: onUse,
-                      ),
-                    ),
-                    const SizedBox(width: AppSpacing.xs),
-                    Expanded(
-                      child: _ActionPill(
-                        label: 'CUSTOMIZE',
-                        color: AppColors.primary,
-                        onTap: onCustomize,
-                      ),
-                    ),
-                  ],
+                child: _ActionPill(
+                  label: 'USE',
+                  color: AppColors.success,
+                  onTap: onUse,
                 ),
               ),
           ],
@@ -177,32 +172,3 @@ class _ActionPill extends StatelessWidget {
   }
 }
 
-class _PremiumBadge extends StatelessWidget {
-  const _PremiumBadge();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-        color: AppColors.secondary,
-        borderRadius: BorderRadius.circular(100),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(AppIcons.premium, size: 10, color: AppColors.textPrimary),
-          const SizedBox(width: 3),
-          Text(
-            'PREMIUM',
-            style: AppTextStyles.secondary(color: AppColors.textPrimary).copyWith(
-              fontSize: 9,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.3,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}

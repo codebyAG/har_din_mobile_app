@@ -1,19 +1,33 @@
 import 'package:flutter/material.dart';
 
+import '../data/datasources/local/local_store.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_icons.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
 import '../widgets/primary_button.dart';
+import 'language_select_screen.dart';
 import 'root_shell.dart';
 
 /// Second screen shown after the splash — brand intro with a CTA into
-/// the app.
+/// the app. First launch routes through language-select (§5); every
+/// launch after that goes straight to the app, since the choice is
+/// stored "forever".
 class OnboardingScreen extends StatelessWidget {
   const OnboardingScreen({super.key});
 
   static const String _illustrationAsset =
       'assets/onboarding_sunset_transparent.png';
+
+  Future<void> _onStart(BuildContext context) async {
+    final hasLanguage = await const LocalStore().getLanguage() != null;
+    if (!context.mounted) return;
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (_) => hasLanguage ? const RootShell() : const LanguageSelectScreen(),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -69,20 +83,9 @@ class OnboardingScreen extends StatelessWidget {
               const SizedBox(height: AppSpacing.xxl),
               PrimaryButton(
                 label: 'शुरू करें',
-                onPressed: () => Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(builder: (_) => const RootShell()),
-                ),
+                onPressed: () => _onStart(context),
               ),
-              const SizedBox(height: AppSpacing.md),
-              GestureDetector(
-                onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('यह फीचर जल्द आ रहा है')),
-                ),
-                child: Text(
-                  'पहले से अकाउंट है? लॉगिन करें',
-                  style: AppTextStyles.secondary(),
-                ),
-              ),
+              // Login link intentionally removed — v1 has no accounts (§5).
             ],
           ),
         ),

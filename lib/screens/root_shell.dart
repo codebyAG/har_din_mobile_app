@@ -1,16 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../core/services/event_queue.dart';
+import '../presentation/providers/app_language_controller.dart';
+import '../presentation/providers/content_view_model.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_icons.dart';
 import '../theme/app_text_styles.dart';
 import '../widgets/app_drawer.dart';
 import '../widgets/glass_container.dart';
-import 'create_post_screen.dart';
 import 'festivals_screen.dart';
 import 'home_screen.dart';
 import 'profile_screen.dart';
 import 'saved_screen.dart';
 
+/// Bottom nav is exactly four tabs (§5) — होम · त्योहार · मेरी क्रिएशन्स ·
+/// प्रोफाइल. The centre "create" button from the pre-integration UI is
+/// gone: Create Post has no upload endpoint, no accounts, no moderation
+/// in v1, so it's unreachable rather than removed from the codebase.
 class RootShell extends StatefulWidget {
   const RootShell({super.key});
 
@@ -20,6 +27,7 @@ class RootShell extends StatefulWidget {
 
 class _RootShellState extends State<RootShell> {
   int _index = 0;
+  bool _loadTriggered = false;
 
   final _screens = const [
     HomeScreen(),
@@ -30,14 +38,26 @@ class _RootShellState extends State<RootShell> {
 
   static const _tabs = [
     (icon: AppIcons.home, activeIcon: AppIcons.homeSolid, label: 'होम'),
-    (icon: AppIcons.festivals, activeIcon: AppIcons.festivalsSolid, label: 'फेस्टिवल'),
-    (icon: AppIcons.saved, activeIcon: AppIcons.savedSolid, label: 'सेव'),
+    (icon: AppIcons.festivals, activeIcon: AppIcons.festivalsSolid, label: 'त्योहार'),
+    (icon: AppIcons.saved, activeIcon: AppIcons.savedSolid, label: 'मेरी क्रिएशन्स'),
     (icon: AppIcons.profile, activeIcon: AppIcons.profileSolid, label: 'प्रोफाइल'),
   ];
 
-  void _openCreatePost() => Navigator.of(context).push(
-        MaterialPageRoute(builder: (_) => const CreatePostScreen()),
-      );
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Fires once per RootShell lifetime, not per tab switch (§4) — this
+    // is the one place `ContentViewModel.load` is called for a normal
+    // app open.
+    if (_loadTriggered) return;
+    _loadTriggered = true;
+    final code = context.read<AppLanguageController>().code;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      context.read<ContentViewModel>().load(code);
+      EventQueue.instance.record(HarDinEventType.appOpen);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,11 +65,10 @@ class _RootShellState extends State<RootShell> {
       extendBody: true,
       drawer: AppDrawer(onSelectTab: (i) => setState(() => _index = i)),
       body: IndexedStack(index: _index, children: _screens),
-      bottomNavigationBar: _PremiumNavBar(
+      bottomNavigationBar: _NavBar(
         selectedIndex: _index,
         tabs: _tabs,
         onTabTap: (i) => setState(() => _index = i),
-        onCreateTap: _openCreatePost,
       ),
     );
   }
@@ -57,17 +76,15 @@ class _RootShellState extends State<RootShell> {
 
 typedef _TabSpec = ({IconData icon, IconData activeIcon, String label});
 
-class _PremiumNavBar extends StatelessWidget {
+class _NavBar extends StatelessWidget {
   final int selectedIndex;
   final List<_TabSpec> tabs;
   final ValueChanged<int> onTabTap;
-  final VoidCallback onCreateTap;
 
-  const _PremiumNavBar({
+  const _NavBar({
     required this.selectedIndex,
     required this.tabs,
     required this.onTabTap,
-    required this.onCreateTap,
   });
 
   @override
@@ -76,73 +93,34 @@ class _PremiumNavBar extends StatelessWidget {
     const barContentHeight = 64.0;
     final barHeight = barContentHeight + bottomInset;
 
-    return SizedBox(
-      height: barHeight + 14,
-      child: Stack(
-        clipBehavior: Clip.none,
-        alignment: Alignment.bottomCenter,
-        children: [
-          Container(
-            height: barHeight,
-            decoration: BoxDecoration(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.textPrimary.withValues(alpha: 0.1),
-                  blurRadius: 24,
-                  offset: const Offset(0, -4),
-                ),
-              ],
-            ),
-            child: GlassContainer(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-              tint: AppColors.card,
-              tintOpacity: 0.72,
-              border: const Border(
-                top: BorderSide(color: Colors.white, width: 1),
-              ),
-              child: Padding(
-                padding: EdgeInsets.only(bottom: bottomInset),
-                child: Row(
-                  children: [
-                    _NavTab(tab: tabs[0], selected: selectedIndex == 0, onTap: () => onTabTap(0)),
-                    _NavTab(tab: tabs[1], selected: selectedIndex == 1, onTap: () => onTabTap(1)),
-                    const SizedBox(width: 64),
-                    _NavTab(tab: tabs[2], selected: selectedIndex == 2, onTap: () => onTabTap(2)),
-                    _NavTab(tab: tabs[3], selected: selectedIndex == 3, onTap: () => onTabTap(3)),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          Positioned(
-            top: 0,
-            child: GestureDetector(
-              onTap: onCreateTap,
-              child: Container(
-                width: 58,
-                height: 58,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: const LinearGradient(
-                    colors: [AppColors.primary, AppColors.primaryDark],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  border: Border.all(color: AppColors.card, width: 4),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 0.4),
-                      blurRadius: 16,
-                      offset: const Offset(0, 6),
-                    ),
-                  ],
-                ),
-                child: const Icon(AppIcons.create, color: Colors.white, size: 24),
-              ),
-            ),
+    return Container(
+      height: barHeight,
+      decoration: BoxDecoration(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.textPrimary.withValues(alpha: 0.1),
+            blurRadius: 24,
+            offset: const Offset(0, -4),
           ),
         ],
+      ),
+      child: GlassContainer(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        tint: AppColors.card,
+        tintOpacity: 0.72,
+        border: const Border(
+          top: BorderSide(color: Colors.white, width: 1),
+        ),
+        child: Padding(
+          padding: EdgeInsets.only(bottom: bottomInset),
+          child: Row(
+            children: [
+              for (var i = 0; i < tabs.length; i++)
+                _NavTab(tab: tabs[i], selected: selectedIndex == i, onTap: () => onTabTap(i)),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -172,6 +150,8 @@ class _NavTab extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               tab.label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: AppTextStyles.bottomNav(
                 color: selected ? AppColors.primary : AppColors.textSecondary,
               ),

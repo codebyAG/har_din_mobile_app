@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../presentation/providers/app_language_controller.dart';
+import '../presentation/providers/content_view_model.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_icons.dart';
 import '../theme/app_spacing.dart';
@@ -79,20 +80,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
               onTap: () => _snack('नोटिफिकेशन सेटिंग जल्द आ रही है'),
             ),
             Consumer<AppLanguageController>(
-              builder: (context, controller, _) {
-                final currentLabel =
-                    controller.language == AppLanguage.hindi ? 'हिंदी' : 'English';
+              builder: (context, languageController, _) {
+                // Real `languages[]` once content has loaded; the fixed
+                // API set (§3) as a fallback before that (or offline).
+                final payload = context.watch<ContentViewModel>().payload;
+                final options = payload != null && payload.languages.isNotEmpty
+                    ? {for (final l in payload.languages) l.label: l.code}
+                    : const {'हिन्दी': 'hi', 'English': 'en', 'मराठी': 'mr'};
+                final currentLabel = options.entries
+                    .firstWhere(
+                      (e) => e.value == languageController.code,
+                      orElse: () => options.entries.first,
+                    )
+                    .key;
                 return _SettingsTile(
                   icon: AppIcons.language,
                   label: 'भाषा',
                   value: currentLabel,
                   onTap: () => _pickOption(
                     'भाषा चुनें',
-                    ['हिंदी', 'English'],
+                    options.keys.toList(),
                     currentLabel,
-                    (v) => context.read<AppLanguageController>().setLanguage(
-                          v == 'हिंदी' ? AppLanguage.hindi : AppLanguage.english,
-                        ),
+                    (label) async {
+                      final code = options[label]!;
+                      await languageController.setLanguageCode(code);
+                      if (!context.mounted) return;
+                      await context
+                          .read<ContentViewModel>()
+                          .load(code, forceLanguageSwitch: true);
+                    },
                   ),
                 );
               },
@@ -123,20 +139,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 applicationLegalese: 'Har Din, Kuch Share Karo',
               ),
             ),
-            const SizedBox(height: AppSpacing.lg),
-            GestureDetector(
-              onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('लॉग आउट किया गया')),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-                child: Text(
-                  'लॉग आउट',
-                  style: AppTextStyles.body(color: AppColors.like)
-                      .copyWith(fontWeight: FontWeight.w600),
-                ),
-              ),
-            ),
+            // Logout removed — no accounts in v1 (§5).
           ],
         ),
       ),

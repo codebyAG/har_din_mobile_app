@@ -48,32 +48,12 @@ class ProfileScreen extends StatelessWidget {
                     MaterialPageRoute(builder: (_) => const SavedScreen()),
                   ),
                 ),
-                _ProfileMenuTile(
-                  icon: AppIcons.people,
-                  label: 'खोजे गए लोग',
-                  onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('जल्द आ रहा है')),
-                  ),
-                ),
+                // "खोजे गए लोग" and logout removed — no accounts in v1 (§5).
                 _ProfileMenuTile(
                   icon: AppIcons.settingsGear,
                   label: 'सेटिंग',
                   onTap: () => Navigator.of(context).push(
                     MaterialPageRoute(builder: (_) => const SettingsScreen()),
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                GestureDetector(
-                  onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('लॉग आउट किया गया')),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-                    child: Text(
-                      'लॉग आउट',
-                      style: AppTextStyles.body(color: AppColors.like)
-                          .copyWith(fontWeight: FontWeight.w600),
-                    ),
                   ),
                 ),
               ],
@@ -139,42 +119,11 @@ class _ProfileHeader extends StatelessWidget {
               '@abhishekgoyal',
               style: AppTextStyles.secondary(color: Colors.white.withValues(alpha: 0.85)),
             ),
-            const SizedBox(height: AppSpacing.lg),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: const [
-                _ProfileStat(value: '156', label: 'पोस्ट्स'),
-                _ProfileStat(value: '2.3K', label: 'फॉलोअर्स'),
-                _ProfileStat(value: '189', label: 'फॉलोइंग'),
-              ],
-            ),
+            // Stats row removed — no accounts in v1 (§5), so there is
+            // nothing real to count.
           ],
         ),
       ),
-    );
-  }
-}
-
-class _ProfileStat extends StatelessWidget {
-  final String value;
-  final String label;
-
-  const _ProfileStat({required this.value, required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Text(
-          value,
-          style: AppTextStyles.cardTitle(color: Colors.white),
-        ),
-        const SizedBox(height: AppSpacing.xs),
-        Text(
-          label,
-          style: AppTextStyles.secondary(color: Colors.white.withValues(alpha: 0.85)),
-        ),
-      ],
     );
   }
 }
