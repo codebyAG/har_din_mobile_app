@@ -26,7 +26,7 @@ class MyApp extends StatelessWidget {
         // repository interface or the ViewModel, never these directly.
         Provider<ContentRepositoryImpl>(
           create: (_) => ContentRepositoryImpl(
-            api: const HarDinApiClient(),
+            api: HarDinApiClient(),
             store: const LocalStore(),
           ),
         ),

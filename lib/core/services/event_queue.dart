@@ -33,7 +33,7 @@ class EventQueue {
   static const int _flushThreshold = 20;
   static const int _maxBatchSize = 200;
 
-  static const HarDinApiClient _api = HarDinApiClient();
+  static final HarDinApiClient _api = HarDinApiClient();
   static const LocalStore _store = LocalStore();
 
   final List<Map<String, dynamic>> _pending = [];
