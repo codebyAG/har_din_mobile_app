@@ -74,20 +74,13 @@ class _PromoBannerCarouselState extends State<PromoBannerCarousel> {
                       onTap: () => widget.onTap(banner),
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-                        child: banner.imageUrl != null
-                            ? CachedNetworkImage(
-                                imageUrl: banner.imageUrl!,
-                                cacheManager: ImageCacheService.instance,
-                                width: cardWidth,
-                                height: cardHeight,
-                                fit: BoxFit.contain,
-                              )
-                            : Image.asset(
-                                banner.imageAsset!,
-                                width: cardWidth,
-                                height: cardHeight,
-                                fit: BoxFit.contain,
-                              ),
+                        child: CachedNetworkImage(
+                          imageUrl: banner.imageUrl,
+                          cacheManager: ImageCacheService.instance,
+                          width: cardWidth,
+                          height: cardHeight,
+                          fit: BoxFit.contain,
+                        ),
                       ),
                     ),
                   );

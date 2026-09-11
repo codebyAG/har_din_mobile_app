@@ -1,20 +1,20 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-import '../data/mock_data.dart';
-import '../models/festival.dart';
+import '../core/services/image_cache_service.dart';
+import '../presentation/providers/saved_designs_controller.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_icons.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
 import '../widgets/festive_glow.dart';
-import '../widgets/festival_image.dart';
+import '../widgets/gradient_tile.dart';
 import '../widgets/religion_filter_chip.dart';
-import '../widgets/shimmer_box.dart';
 import 'preview_share_screen.dart';
 
-/// My Creations — statuses the user has downloaded, customized, or
-/// favourited. Backed by mock data today; the tab structure and per-item
-/// actions are the real, functional shape a backend would slot into later.
+/// My Creations — designs the user downloaded or favorited, read from
+/// local storage only (§5); never sent to the server.
 class SavedScreen extends StatefulWidget {
   const SavedScreen({super.key});
 
@@ -22,35 +22,19 @@ class SavedScreen extends StatefulWidget {
   State<SavedScreen> createState() => _SavedScreenState();
 }
 
-class _MyCreation {
-  final Festival festival;
-  final String date;
-  final int likeCount;
-
-  const _MyCreation({required this.festival, required this.date, required this.likeCount});
-}
-
 class _SavedScreenState extends State<SavedScreen> {
   static const _tabs = ['डाउनलोडेड', 'कस्टमाइज़्ड', 'फेवरेट'];
   String _selectedTab = 'डाउनलोडेड';
-  final Set<String> _favorited = {};
-
-  List<_MyCreation> get _creations {
-    final festivals = MockData.festivals.take(6).toList();
-    return [
-      for (final f in festivals)
-        _MyCreation(festival: f, date: f.date, likeCount: 40 + f.daysLeft % 60),
-    ];
-  }
 
   @override
   Widget build(BuildContext context) {
-    // कस्टमाइज़्ड tab — always empty, "coming soon" in v1: no editor
-    // exists yet to have customized anything into (§5).
-    final creations = switch (_selectedTab) {
-      'फेवरेट' => _creations.where((c) => _favorited.contains(c.festival.id)).toList(),
-      'कस्टमाइज़्ड' => const <_MyCreation>[],
-      _ => _creations,
+    final controller = context.watch<SavedDesignsController>();
+    // कस्टमाइज़्ड — always empty, "coming soon" in v1: no editor exists
+    // yet to have customized anything into (§5).
+    final records = switch (_selectedTab) {
+      'फेवरेट' => controller.favorites,
+      'कस्टमाइज़्ड' => const [],
+      _ => controller.downloaded,
     };
 
     return ColoredBox(
@@ -103,50 +87,36 @@ class _SavedScreenState extends State<SavedScreen> {
                 ),
                 const SizedBox(height: AppSpacing.lg),
                 Expanded(
-                  child: ShimmerReveal(
-                    skeleton: _CreationsSkeleton(),
-                    child: creations.isEmpty
-                        ? _EmptyState(tab: _selectedTab)
-                        : GridView.builder(
-                            padding: const EdgeInsets.fromLTRB(
-                              AppSpacing.screenPadding,
-                              0,
-                              AppSpacing.screenPadding,
-                              AppSpacing.sectionGap,
-                            ),
-                            itemCount: creations.length,
-                            gridDelegate:
-                                const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
-                              mainAxisSpacing: AppSpacing.cardGap,
-                              crossAxisSpacing: AppSpacing.cardGap,
-                              childAspectRatio: 0.82,
-                            ),
-                            itemBuilder: (context, i) {
-                              final creation = creations[i];
-                              return _CreationCard(
-                                creation: creation,
-                                isFavorited: _favorited.contains(creation.festival.id),
-                                onFavorite: () => setState(() {
-                                  if (!_favorited.add(creation.festival.id)) {
-                                    _favorited.remove(creation.festival.id);
-                                  }
-                                }),
-                                onTap: () => Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (_) => PreviewShareScreen(
-                                      festival: creation.festival,
-                                      gradient: creation.festival.gradient,
-                                      useFestivalImage: true,
-                                      name: 'सौरभ शर्मा',
-                                      message: '',
-                                    ),
-                                  ),
-                                ),
-                              );
-                            },
+                  child: records.isEmpty
+                      ? _EmptyState(tab: _selectedTab)
+                      : GridView.builder(
+                          padding: const EdgeInsets.fromLTRB(
+                            AppSpacing.screenPadding,
+                            0,
+                            AppSpacing.screenPadding,
+                            AppSpacing.sectionGap,
                           ),
-                  ),
+                          itemCount: records.length,
+                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            mainAxisSpacing: AppSpacing.cardGap,
+                            crossAxisSpacing: AppSpacing.cardGap,
+                            childAspectRatio: 0.82,
+                          ),
+                          itemBuilder: (context, i) {
+                            final record = records[i];
+                            return _CreationCard(
+                              record: record,
+                              isFavorited: controller.isFavorite(record.id),
+                              onFavorite: () => controller.toggleFavorite(record.toDesign()),
+                              onTap: () => Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => PreviewShareScreen(design: record.toDesign()),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
                 ),
               ],
             ),
@@ -158,13 +128,13 @@ class _SavedScreenState extends State<SavedScreen> {
 }
 
 class _CreationCard extends StatelessWidget {
-  final _MyCreation creation;
+  final SavedDesignRecord record;
   final bool isFavorited;
   final VoidCallback onFavorite;
   final VoidCallback onTap;
 
   const _CreationCard({
-    required this.creation,
+    required this.record,
     required this.isFavorited,
     required this.onFavorite,
     required this.onTap,
@@ -188,42 +158,33 @@ class _CreationCard extends StatelessWidget {
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  FestivalImage(festival: creation.festival, iconSize: 30),
-                  Positioned.fill(
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.transparent,
-                            Colors.black.withValues(alpha: 0.55),
-                          ],
-                          stops: const [0.5, 1.0],
-                        ),
-                      ),
+                  CachedNetworkImage(
+                    imageUrl: record.thumbnailUrl,
+                    cacheManager: ImageCacheService.instance,
+                    fit: BoxFit.cover,
+                    errorWidget: (context, url, error) => const GradientTile(
+                      colors: [AppColors.primary, AppColors.primaryDark],
+                      icon: AppIcons.celebration,
+                      iconSize: 30,
                     ),
                   ),
                   Positioned(
-                    left: AppSpacing.sm,
-                    right: AppSpacing.sm,
-                    bottom: AppSpacing.sm,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          creation.festival.name,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: AppTextStyles.cardTitle(color: Colors.white),
+                    top: 6,
+                    right: 6,
+                    child: GestureDetector(
+                      onTap: onFavorite,
+                      child: Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.9),
+                          shape: BoxShape.circle,
                         ),
-                        Text(
-                          'सौरभ शर्मा',
-                          style: AppTextStyles.secondary(
-                            color: Colors.white.withValues(alpha: 0.85),
-                          ),
+                        child: Icon(
+                          isFavorited ? AppIcons.heartSolid : AppIcons.heartOutline,
+                          size: 15,
+                          color: isFavorited ? AppColors.like : AppColors.textSecondary,
                         ),
-                      ],
+                      ),
                     ),
                   ),
                 ],
@@ -236,17 +197,11 @@ class _CreationCard extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  Text(creation.date, style: AppTextStyles.secondary()),
-                  const Spacer(),
-                  GestureDetector(
-                    onTap: onFavorite,
-                    child: Icon(
-                      isFavorited ? AppIcons.heartSolid : AppIcons.heartOutline,
-                      size: 15,
-                      color: isFavorited ? AppColors.like : AppColors.textSecondary,
-                    ),
+                  Text(
+                    '${record.savedAt.day}/${record.savedAt.month}/${record.savedAt.year}',
+                    style: AppTextStyles.secondary(),
                   ),
-                  const SizedBox(width: AppSpacing.sm),
+                  const Spacer(),
                   const Icon(AppIcons.share, size: 14, color: AppColors.textSecondary),
                 ],
               ),
@@ -291,39 +246,13 @@ class _EmptyState extends StatelessWidget {
               switch (tab) {
                 'फेवरेट' => 'दिल के निशान पर टैप करके स्टेटस को फेवरेट बनाएं।',
                 'कस्टमाइज़्ड' => 'कस्टमाइज़ फीचर जल्द आ रहा है।',
-                _ => 'यहाँ आपके बनाए हुए स्टेटस दिखेंगे।',
+                _ => 'यहाँ आपके डाउनलोड किए स्टेटस दिखेंगे।',
               },
               textAlign: TextAlign.center,
               style: AppTextStyles.secondary(),
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _CreationsSkeleton extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return GridView.builder(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.screenPadding,
-        0,
-        AppSpacing.screenPadding,
-        AppSpacing.sectionGap,
-      ),
-      itemCount: 6,
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        mainAxisSpacing: AppSpacing.cardGap,
-        crossAxisSpacing: AppSpacing.cardGap,
-        childAspectRatio: 0.82,
-      ),
-      itemBuilder: (context, i) => const ShimmerBox(
-        height: double.infinity,
-        width: double.infinity,
-        borderRadius: BorderRadius.all(Radius.circular(16)),
       ),
     );
   }

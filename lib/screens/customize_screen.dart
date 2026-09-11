@@ -8,7 +8,6 @@ import '../theme/app_text_styles.dart';
 import '../widgets/festival_image.dart';
 import '../widgets/gradient_tile.dart';
 import '../widgets/primary_button.dart';
-import 'preview_share_screen.dart';
 
 class CustomizeScreen extends StatefulWidget {
   final Festival festival;
@@ -193,17 +192,13 @@ class _CustomizeScreenState extends State<CustomizeScreen> {
             ),
             const SizedBox(height: AppSpacing.sectionGap),
             PrimaryButton(
-              label: 'Preview देखें',
-              onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => PreviewShareScreen(
-                    festival: widget.festival,
-                    gradient: _backgroundOptions[_selectedBackgroundIndex],
-                    useFestivalImage: _selectedBackgroundIndex == 0,
-                    name: _nameController.text,
-                    message: _messageController.text,
-                  ),
-                ),
+              // Customize has no real data to preview in v1 — there is
+              // no editor/compositing endpoint yet (§5). Unreachable
+              // from navigation; kept compiling as a disabled "coming
+              // soon" rather than a fake preview over dummy content.
+              label: 'Preview देखें (जल्द आ रहा है)',
+              onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('यह फीचर जल्द आ रहा है')),
               ),
             ),
           ],

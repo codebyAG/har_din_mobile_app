@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+/// An occasion (`occasions[]`) adapted for the pre-integration UI widgets
+/// (FestivalListTile, FestivalImage) — see OccasionMapper.
 class Festival {
   final String id;
   final String name;
@@ -9,17 +11,11 @@ class Festival {
   final List<Color> gradient;
   final IconData icon;
 
-  /// Real photo, e.g. assets/festival_icons/diwali.png — falls back to the
-  /// gradient + icon tile when null or missing.
-  final String? imageAsset;
-
-  /// Network photo (from `occasions[].image_url`) — takes priority over
-  /// [imageAsset] when set. Null for every mock/bundled festival.
+  /// `occasions[].image_url` — network, falls back to the gradient +
+  /// icon tile when null.
   final String? imageUrl;
 
-  /// The API `categories[].id` this occasion opens, when this Festival was
-  /// built from a real `occasions[]` entry — null for mock/bundled ones,
-  /// which fall back to demo statuses instead of a real design lookup.
+  /// The API `categories[].id` this occasion opens.
   final String? apiCategoryId;
 
   const Festival({
@@ -30,7 +26,6 @@ class Festival {
     required this.daysLeft,
     required this.gradient,
     required this.icon,
-    this.imageAsset,
     this.imageUrl,
     this.apiCategoryId,
   });

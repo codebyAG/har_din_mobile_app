@@ -6,9 +6,7 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_icons.dart';
 
 /// Adapts a real `designs[]` entry onto the existing [StatusItem] shape
-/// so StatusGridCard (built for the pre-integration mock grid) renders
-/// live data unchanged. Designs are shown exactly as uploaded — no text
-/// overlay to fill in, unlike the mock placeholder cards (§1).
+/// so StatusGridCard renders live data.
 class DesignMapper {
   DesignMapper._();
 
@@ -23,12 +21,8 @@ class DesignMapper {
     final palette = _palette[design.id.hashCode.abs() % _palette.length];
     return StatusItem(
       id: design.id,
-      festivalName: '',
-      text: '',
       gradient: palette,
       icon: AppIcons.celebration,
-      likeCount: design.stats.shares,
-      festivalId: design.categoryId,
       imageUrl: design.thumbnailUrl,
     );
   }

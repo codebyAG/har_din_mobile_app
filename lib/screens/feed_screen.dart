@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../data/mock_data.dart';
+import '../models/feed_post.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_icons.dart';
 import '../theme/app_spacing.dart';
@@ -18,7 +18,9 @@ class _FeedScreenState extends State<FeedScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final posts = MockData.feedPosts;
+    // Feed is unreachable in v1 — no posts, no comments, no users (§5).
+    // No nav route leads here; kept compiling with an empty list.
+    final posts = const <FeedPost>[];
 
     return Scaffold(
       backgroundColor: AppColors.background,

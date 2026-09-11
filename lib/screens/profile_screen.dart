@@ -110,17 +110,17 @@ class _ProfileHeader extends StatelessWidget {
               child: Icon(AppIcons.account, size: 44, color: AppColors.primary),
             ),
             const SizedBox(height: AppSpacing.md),
+            // No fake name/handle — there are no accounts in v1 (§5),
+            // so there is no real identity to show here.
             Text(
-              'अभिषेक गोयल',
+              'हर दिन',
               style: AppTextStyles.screenTitle(color: Colors.white),
             ),
             const SizedBox(height: AppSpacing.xs),
             Text(
-              '@abhishekgoyal',
+              'Har Din, Kuch Share Karo',
               style: AppTextStyles.secondary(color: Colors.white.withValues(alpha: 0.85)),
             ),
-            // Stats row removed — no accounts in v1 (§5), so there is
-            // nothing real to count.
           ],
         ),
       ),

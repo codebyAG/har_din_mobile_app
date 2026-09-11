@@ -6,6 +6,7 @@ import 'data/datasources/remote/har_din_api_client.dart';
 import 'data/repositories/content_repository_impl.dart';
 import 'presentation/providers/app_language_controller.dart';
 import 'presentation/providers/content_view_model.dart';
+import 'presentation/providers/saved_designs_controller.dart';
 import 'screens/splash_screen.dart';
 import 'theme/app_theme.dart';
 
@@ -35,6 +36,9 @@ class MyApp extends StatelessWidget {
         ),
         ChangeNotifierProvider<AppLanguageController>(
           create: (_) => AppLanguageController(),
+        ),
+        ChangeNotifierProvider<SavedDesignsController>(
+          create: (_) => SavedDesignsController(),
         ),
       ],
       child: MaterialApp(

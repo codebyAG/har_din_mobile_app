@@ -1,11 +1,8 @@
+/// A `banners[]` entry. Real `image_url` only — there is no bundled
+/// fallback banner; when the API has none, the carousel simply isn't shown.
 class PromoBanner {
   final String id;
+  final String imageUrl;
 
-  /// Bundled fallback image — used when [imageUrl] is null.
-  final String? imageAsset;
-
-  /// Real `banners[].image_url` from the API — takes priority when set.
-  final String? imageUrl;
-
-  const PromoBanner({required this.id, this.imageAsset, this.imageUrl});
+  const PromoBanner({required this.id, required this.imageUrl});
 }

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../core/constants/religion_filters.dart';
 import '../core/utils/occasion_mapper.dart';
-import '../data/mock_data.dart';
 import '../models/festival.dart';
 import '../presentation/providers/content_view_model.dart';
 import '../theme/app_colors.dart';
@@ -14,8 +14,9 @@ import '../widgets/religion_filter_chip.dart';
 import '../widgets/shimmer_box.dart';
 import 'status_gallery_screen.dart';
 
-/// Reads live `occasions[]` from [ContentViewModel] when present, falling
-/// back to the bundled mock festival list otherwise (§4) — never blank.
+/// Reads live `occasions[]` from [ContentViewModel] — no mock fallback;
+/// an empty state is shown until the API has content (§4's cache means
+/// this only ever happens on a first, offline-from-birth install).
 class FestivalsScreen extends StatefulWidget {
   const FestivalsScreen({super.key});
 
@@ -31,10 +32,8 @@ class _FestivalsScreenState extends State<FestivalsScreen> {
     final payload = context.watch<ContentViewModel>().payload;
     final occasions = payload?.occasions ?? const [];
 
-    final allFestivals = occasions.isNotEmpty
-        ? (occasions.map(OccasionMapper.fromOccasion).toList()
-          ..sort((a, b) => a.daysLeft.compareTo(b.daysLeft)))
-        : MockData.festivals;
+    final allFestivals = occasions.map(OccasionMapper.fromOccasion).toList()
+      ..sort((a, b) => a.daysLeft.compareTo(b.daysLeft));
 
     final festivals = _selectedReligion == 'सभी'
         ? allFestivals
@@ -70,10 +69,10 @@ class _FestivalsScreenState extends State<FestivalsScreen> {
                     padding: const EdgeInsets.symmetric(
                       horizontal: AppSpacing.screenPadding,
                     ),
-                    itemCount: MockData.religionFilters.length,
+                    itemCount: religionFilters.length,
                     separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.sm),
                     itemBuilder: (context, i) {
-                      final religion = MockData.religionFilters[i];
+                      final religion = religionFilters[i];
                       return ReligionFilterChip(
                         label: religion,
                         selected: religion == _selectedReligion,
@@ -103,7 +102,9 @@ class _FestivalsScreenState extends State<FestivalsScreen> {
                     child: festivals.isEmpty
                         ? Center(
                             child: Text(
-                              'इस श्रेणी में अभी कोई त्योहार नहीं है',
+                              occasions.isEmpty
+                                  ? 'त्योहार लोड हो रहे हैं...'
+                                  : 'इस श्रेणी में अभी कोई त्योहार नहीं है',
                               style: AppTextStyles.secondary(),
                             ),
                           )

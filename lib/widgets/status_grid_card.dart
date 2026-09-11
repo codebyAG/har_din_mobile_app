@@ -48,49 +48,18 @@ class StatusGridCard extends StatelessWidget {
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  if (status.imageUrl != null)
-                    CachedNetworkImage(
-                      imageUrl: status.imageUrl!,
-                      cacheManager: ImageCacheService.instance,
-                      fit: BoxFit.cover,
-                      width: double.infinity,
-                      height: double.infinity,
-                      errorWidget: (context, url, error) => GradientTile(
-                        colors: status.gradient,
-                        icon: status.icon,
-                        iconSize: 30,
-                      ),
-                    )
-                  else if (status.imageAsset != null)
-                    Image.asset(
-                      status.imageAsset!,
-                      fit: BoxFit.cover,
-                      width: double.infinity,
-                      height: double.infinity,
-                      errorBuilder: (context, error, stackTrace) => GradientTile(
-                        colors: status.gradient,
-                        icon: status.icon,
-                        iconSize: 30,
-                      ),
-                    )
-                  else
-                    GradientTile(colors: status.gradient, icon: status.icon, iconSize: 30),
-                  Positioned.fill(
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.transparent,
-                            Colors.black.withValues(alpha: 0.55),
-                          ],
-                          stops: const [0.4, 1.0],
-                        ),
-                      ),
+                  CachedNetworkImage(
+                    imageUrl: status.imageUrl,
+                    cacheManager: ImageCacheService.instance,
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    height: double.infinity,
+                    errorWidget: (context, url, error) => GradientTile(
+                      colors: status.gradient,
+                      icon: status.icon,
+                      iconSize: 30,
                     ),
                   ),
-                  // FREE/PREMIUM badge removed — no paywall exists in v1 (§5).
                   if (onLike != null)
                     Positioned(
                       top: 6,
@@ -111,23 +80,9 @@ class StatusGridCard extends StatelessWidget {
                         ),
                       ),
                     ),
-                  Positioned(
-                    left: AppSpacing.sm,
-                    right: AppSpacing.sm,
-                    bottom: AppSpacing.sm,
-                    child: Text(
-                      status.text,
-                      textAlign: TextAlign.center,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.cardTitle(color: Colors.white),
-                    ),
-                  ),
                 ],
               ),
             ),
-            // CUSTOMIZE removed from the card — disabled/"coming soon" in
-            // v2 (§5); USE is the sole, full-width action now.
             if (showActions)
               Padding(
                 padding: const EdgeInsets.all(AppSpacing.xs),
@@ -171,4 +126,3 @@ class _ActionPill extends StatelessWidget {
     );
   }
 }
-

@@ -1,36 +1,18 @@
 import 'package:flutter/material.dart';
 
+/// A `designs[]` entry adapted for StatusGridCard — see DesignMapper.
+/// [gradient]/[icon] are only the fallback shown while [imageUrl] loads
+/// or if it 404s; the real content is always the network thumbnail.
 class StatusItem {
   final String id;
-  final String festivalName;
-  final String text;
   final List<Color> gradient;
   final IconData icon;
-  final int likeCount;
-  final bool isFree;
-
-  /// Id of the Festival this status belongs to, so tapping it opens the
-  /// matching customize flow instead of an unrelated one.
-  final String? festivalId;
-
-  /// Real photo, e.g. assets/festival_icons/diwali.png — falls back to the
-  /// gradient + icon tile when null or missing.
-  final String? imageAsset;
-
-  /// Real `designs[].thumbnail_url` — network, takes priority over
-  /// [imageAsset] when set. Null for every mock status.
-  final String? imageUrl;
+  final String imageUrl;
 
   const StatusItem({
     required this.id,
-    required this.festivalName,
-    required this.text,
     required this.gradient,
     required this.icon,
-    required this.likeCount,
-    this.isFree = true,
-    this.festivalId,
-    this.imageAsset,
-    this.imageUrl,
+    required this.imageUrl,
   });
 }

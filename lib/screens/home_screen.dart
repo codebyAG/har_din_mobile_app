@@ -3,11 +3,11 @@ import 'package:provider/provider.dart';
 
 import '../core/services/time_band_service.dart';
 import '../core/utils/occasion_mapper.dart';
-import '../data/mock_data.dart';
 import '../domain/entities/content_entities.dart';
 import '../models/festival.dart';
 import '../models/home_category.dart';
 import '../models/promo_banner.dart';
+import '../presentation/providers/app_language_controller.dart';
 import '../presentation/providers/content_view_model.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_icons.dart';
@@ -32,14 +32,12 @@ class HomeScreen extends StatelessWidget {
     [AppColors.primary, AppColors.primaryDark],
   ];
 
-  List<PromoBanner> _banners(ContentPayload? payload) {
-    if (payload == null || payload.banners.isEmpty) return MockData.promoBanners;
+  List<PromoBanner> _banners(ContentPayload payload) {
     final sorted = payload.banners.toList()..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
     return sorted.map((b) => PromoBanner(id: b.id, imageUrl: b.imageUrl)).toList();
   }
 
-  List<HomeCategory> _categories(ContentPayload? payload) {
-    if (payload == null || payload.categories.isEmpty) return MockData.homeCategories;
+  List<HomeCategory> _categories(ContentPayload payload) {
     final top = payload.categories.where((c) => c.parentId == null).toList();
     final order = payload.home.categoryOrder;
     top.sort((a, b) {
@@ -50,14 +48,11 @@ class HomeScreen extends StatelessWidget {
       }
       return a.sortOrder.compareTo(b.sortOrder);
     });
-    if (top.isEmpty) return MockData.homeCategories;
     return [
       for (var i = 0; i < top.length; i++)
         HomeCategory(
           id: top[i].id,
-          hindiLabel: top[i].name,
-          englishLabel: top[i].name,
-          apiName: top[i].name,
+          name: top[i].name,
           iconUrl: top[i].iconUrl,
           icon: AppIcons.celebration,
           gradient: _categoryPalette[i % _categoryPalette.length],
@@ -113,74 +108,21 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ),
                 Expanded(
-                  child: ShimmerReveal(
-                    skeleton: _HomeSkeleton(),
-                    child: CustomScrollView(
-                      slivers: [
-                        SliverPadding(
-                          padding: const EdgeInsets.only(top: AppSpacing.lg),
-                          sliver: SliverToBoxAdapter(
-                            child: PromoBannerCarousel(
-                              banners: _banners(payload),
-                              onTap: (banner) => _onBannerTap(context, banner, payload),
-                            ),
+                  child: payload == null
+                      ? _LoadingOrError(
+                          isLoading: viewModel.isLoading,
+                          onRetry: () => viewModel.load(
+                            context.read<AppLanguageController>().code,
+                          ),
+                        )
+                      : ShimmerReveal(
+                          skeleton: _HomeSkeleton(),
+                          child: _HomeContent(
+                            payload: payload,
+                            banners: _banners(payload),
+                            categories: _categories(payload),
                           ),
                         ),
-                        if (payload != null && payload.occasions.isNotEmpty)
-                          SliverToBoxAdapter(
-                            child: _OccasionsSection(occasions: payload.occasions),
-                          ),
-                        if (payload != null)
-                          SliverToBoxAdapter(
-                            child: _TimeBandSection(payload: payload),
-                          ),
-                        const SliverPadding(
-                          padding: EdgeInsets.symmetric(vertical: AppSpacing.lg),
-                          sliver: SliverToBoxAdapter(
-                            child: Image(
-                              image: AssetImage(
-                                'assets/categories_heading_home_screen_transparent.png',
-                              ),
-                            ),
-                          ),
-                        ),
-                        SliverPadding(
-                          padding: const EdgeInsets.fromLTRB(
-                            AppSpacing.screenPadding,
-                            0,
-                            AppSpacing.screenPadding,
-                            AppSpacing.sectionGap,
-                          ),
-                          sliver: Builder(builder: (context) {
-                            final categories = _categories(payload);
-                            return SliverGrid(
-                              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 3,
-                                mainAxisSpacing: AppSpacing.md,
-                                crossAxisSpacing: AppSpacing.md,
-                                childAspectRatio: 0.72,
-                              ),
-                              delegate: SliverChildBuilderDelegate(
-                                (context, i) {
-                                  final category = categories[i];
-                                  return CategoryGridTile(
-                                    category: category,
-                                    onTap: () => Navigator.of(context).push(
-                                      MaterialPageRoute(
-                                        builder: (_) =>
-                                            CategoryDetailScreen(category: category),
-                                      ),
-                                    ),
-                                  );
-                                },
-                                childCount: categories.length,
-                              ),
-                            );
-                          }),
-                        ),
-                      ],
-                    ),
-                  ),
                 ),
               ],
             ),
@@ -189,56 +131,159 @@ class HomeScreen extends StatelessWidget {
       ),
     );
   }
+}
 
-  void _onBannerTap(BuildContext context, PromoBanner banner, ContentPayload? payload) {
-    if (payload != null && payload.banners.isNotEmpty) {
-      final apiBanner = payload.banners.firstWhere(
-        (b) => b.id == banner.id,
-        orElse: () => payload.banners.first,
+class _LoadingOrError extends StatelessWidget {
+  final bool isLoading;
+  final VoidCallback onRetry;
+
+  const _LoadingOrError({required this.isLoading, required this.onRetry});
+
+  @override
+  Widget build(BuildContext context) {
+    if (isLoading) {
+      return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+    }
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.xl),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'कंटेंट लोड नहीं हो पाया। कृपया इंटरनेट जाँचें।',
+              textAlign: TextAlign.center,
+              style: AppTextStyles.secondary(),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            GestureDetector(
+              onTap: onRetry,
+              child: Text(
+                'फिर से कोशिश करें',
+                style: AppTextStyles.body(color: AppColors.primary)
+                    .copyWith(fontWeight: FontWeight.w600),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _HomeContent extends StatelessWidget {
+  final ContentPayload payload;
+  final List<PromoBanner> banners;
+  final List<HomeCategory> categories;
+
+  const _HomeContent({
+    required this.payload,
+    required this.banners,
+    required this.categories,
+  });
+
+  void _onBannerTap(BuildContext context, PromoBanner banner) {
+    final apiBanner = payload.banners.firstWhere(
+      (b) => b.id == banner.id,
+      orElse: () => payload.banners.first,
+    );
+    if (apiBanner.target == 'category' && apiBanner.targetRef.isNotEmpty) {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => StatusGalleryScreen(
+            festival: Festival(
+              id: apiBanner.targetRef,
+              name: '',
+              date: '',
+              religion: '',
+              daysLeft: 0,
+              gradient: const [AppColors.primary, AppColors.primaryDark],
+              icon: AppIcons.celebration,
+              apiCategoryId: apiBanner.targetRef,
+            ),
+          ),
+        ),
       );
-      if (apiBanner.target == 'category' && apiBanner.targetRef.isNotEmpty) {
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (_) => StatusGalleryScreen(
-              festival: Festival(
-                id: apiBanner.targetRef,
-                name: '',
-                date: '',
-                religion: '',
-                daysLeft: 0,
-                gradient: const [AppColors.primary, AppColors.primaryDark],
-                icon: AppIcons.celebration,
-                apiCategoryId: apiBanner.targetRef,
+      return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('यह फीचर जल्द आ रहा है')),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomScrollView(
+      slivers: [
+        if (banners.isNotEmpty)
+          SliverPadding(
+            padding: const EdgeInsets.only(top: AppSpacing.lg),
+            sliver: SliverToBoxAdapter(
+              child: PromoBannerCarousel(
+                banners: banners,
+                onTap: (banner) => _onBannerTap(context, banner),
               ),
             ),
           ),
-        );
-      }
-      return;
-    }
-
-    // Mock fallback banners — only Diwali/WhatsApp still lead anywhere;
-    // Customize and Feed are unreachable in v1 (§5).
-    switch (banner.id) {
-      case 'diwali':
-        final diwali = MockData.festivals.firstWhere(
-          (f) => f.id == 'diwali',
-          orElse: () => MockData.festivals.first,
-        );
-        Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => StatusGalleryScreen(festival: diwali)),
-        );
-        break;
-      case 'whatsapp':
-        Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => const StatusGalleryScreen()),
-        );
-        break;
-      default:
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('यह फीचर जल्द आ रहा है')),
-        );
-    }
+        if (payload.occasions.isNotEmpty)
+          SliverToBoxAdapter(
+            child: _OccasionsSection(occasions: payload.occasions),
+          ),
+        SliverToBoxAdapter(
+          child: _TimeBandSection(payload: payload),
+        ),
+        const SliverPadding(
+          padding: EdgeInsets.symmetric(vertical: AppSpacing.lg),
+          sliver: SliverToBoxAdapter(
+            child: Image(
+              image: AssetImage(
+                'assets/categories_heading_home_screen_transparent.png',
+              ),
+            ),
+          ),
+        ),
+        if (categories.isEmpty)
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: AppSpacing.xl),
+              child: Center(
+                child: Text('अभी कोई श्रेणी उपलब्ध नहीं है', style: AppTextStyles.secondary()),
+              ),
+            ),
+          )
+        else
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.screenPadding,
+              0,
+              AppSpacing.screenPadding,
+              AppSpacing.sectionGap,
+            ),
+            sliver: SliverGrid(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                mainAxisSpacing: AppSpacing.md,
+                crossAxisSpacing: AppSpacing.md,
+                childAspectRatio: 0.72,
+              ),
+              delegate: SliverChildBuilderDelegate(
+                (context, i) {
+                  final category = categories[i];
+                  return CategoryGridTile(
+                    category: category,
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => CategoryDetailScreen(category: category),
+                      ),
+                    ),
+                  );
+                },
+                childCount: categories.length,
+              ),
+            ),
+          ),
+      ],
+    );
   }
 }
 
@@ -365,9 +410,7 @@ class _TimeBandSection extends StatelessWidget {
                       builder: (_) => CategoryDetailScreen(
                         category: HomeCategory(
                           id: category.id,
-                          hindiLabel: category.name,
-                          englishLabel: category.name,
-                          apiName: category.name,
+                          name: category.name,
                           iconUrl: category.iconUrl,
                           icon: AppIcons.celebration,
                           gradient: const [AppColors.secondary, AppColors.primary],

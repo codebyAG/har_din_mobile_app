@@ -4,10 +4,10 @@ import 'package:provider/provider.dart';
 import '../core/services/search_service.dart';
 import '../core/services/time_band_service.dart';
 import '../core/utils/design_mapper.dart';
-import '../data/mock_data.dart';
 import '../domain/entities/content_entities.dart';
 import '../models/festival.dart';
 import '../presentation/providers/content_view_model.dart';
+import '../presentation/providers/saved_designs_controller.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_icons.dart';
 import '../theme/app_spacing.dart';
@@ -18,15 +18,10 @@ import '../widgets/shimmer_box.dart';
 import '../widgets/status_grid_card.dart';
 import 'preview_share_screen.dart';
 
-/// Status gallery — scoped to a single festival/occasion when [festival]
-/// is given (title becomes its name, statuses are that occasion's real
-/// designs when available), otherwise shows the general trending grid.
-///
-/// Reads live `designs[]` from [ContentViewModel] when [festival] carries
-/// an [Festival.apiCategoryId] (built from a real occasion — see
-/// OccasionMapper); falls back to the bundled mock grid otherwise, so a
-/// first open with no signal, or content with no live designs yet, is
-/// never blank (§4).
+/// Status gallery — scoped to a single occasion when [festival] is given
+/// (title becomes its name, grid is that occasion's real `designs[]`),
+/// otherwise shows every design in the payload. No mock fallback — an
+/// empty state is shown until the API has designs for this scope.
 class StatusGalleryScreen extends StatefulWidget {
   final Festival? festival;
 
@@ -40,7 +35,6 @@ class _StatusGalleryScreenState extends State<StatusGalleryScreen> {
   // प्रीमियम tab removed — no paywall exists in v1 (§5).
   static const _tabs = ['सभी', 'नए', 'लोकप्रिय'];
   String _selectedTab = 'सभी';
-  final Set<String> _liked = {};
   String _query = '';
 
   Future<void> _search(BuildContext context) async {
@@ -80,67 +74,33 @@ class _StatusGalleryScreenState extends State<StatusGalleryScreen> {
     if (result != null) setState(() => _query = result.trim());
   }
 
-  void _openPreview(BuildContext context, {
-    required Festival festival,
-    required List<Color> gradient,
-    Design? design,
-    bool useFestivalImage = false,
-  }) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => PreviewShareScreen(
-          festival: festival,
-          gradient: gradient,
-          useFestivalImage: useFestivalImage,
-          name: '',
-          message: '',
-          design: design,
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final festival = widget.festival;
     final payload = context.watch<ContentViewModel>().payload;
     final categoryId = festival?.apiCategoryId;
+    final favorites = context.watch<SavedDesignsController>();
 
-    // Real path: this occasion has a live category and the payload has
-    // designs for it. Falls back to mock the moment either is false.
-    List<Design> realDesigns = [];
+    List<Design> designs = const [];
     if (payload != null) {
       final band = TimeBandService.currentBand(payload.timeBands);
       var pool = categoryId != null
           ? payload.designs.where((d) => d.categoryId == categoryId)
           : payload.designs;
       pool = pool.where((d) => d.matchesBand(band));
-      realDesigns = _query.isEmpty
+      designs = _query.isEmpty
           ? pool.toList()
           : SearchService.search(_query, pool.toList(), payload.tags);
     }
 
-    final usingRealData = realDesigns.isNotEmpty || (payload != null && _query.isNotEmpty);
-    final designById = {for (final d in realDesigns) d.id: d};
-
-    realDesigns = switch (_selectedTab) {
-      'नए' => (realDesigns.toList()
+    final designById = {for (final d in designs) d.id: d};
+    designs = switch (_selectedTab) {
+      'नए' => (designs.toList()
         ..sort((a, b) => (b.publishedAt ?? DateTime(0)).compareTo(a.publishedAt ?? DateTime(0)))),
-      'लोकप्रिय' => (realDesigns.toList()
-        ..sort((a, b) => b.stats.shares.compareTo(a.stats.shares))),
-      _ => realDesigns,
+      'लोकप्रिय' => (designs.toList()..sort((a, b) => b.stats.shares.compareTo(a.stats.shares))),
+      _ => designs,
     };
-
-    final mockStatuses = _query.isNotEmpty
-        ? const []
-        : (festival != null ? MockData.statusesForFestival(festival) : MockData.trendingStatuses);
-    final statuses = usingRealData
-        ? realDesigns.map(DesignMapper.toStatusItem).toList()
-        : switch (_selectedTab) {
-            'लोकप्रिय' => (mockStatuses.toList()
-              ..sort((a, b) => b.likeCount.compareTo(a.likeCount))),
-            _ => mockStatuses,
-          };
+    final statuses = designs.map(DesignMapper.toStatusItem).toList();
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -201,7 +161,9 @@ class _StatusGalleryScreenState extends State<StatusGalleryScreen> {
                           child: Text(
                             _query.isNotEmpty
                                 ? 'कोई परिणाम नहीं मिला'
-                                : 'इस श्रेणी में अभी कोई स्टेटस नहीं है',
+                                : (payload == null
+                                    ? 'लोड हो रहा है...'
+                                    : 'इस श्रेणी में अभी कोई स्टेटस नहीं है'),
                             style: AppTextStyles.secondary(),
                           ),
                         )
@@ -244,43 +206,17 @@ class _StatusGalleryScreenState extends State<StatusGalleryScreen> {
                             ),
                             itemBuilder: (context, i) {
                               final status = statuses[i];
-                              final design = designById[status.id];
-                              final statusFestival = design != null
-                                  ? (festival ??
-                                      Festival(
-                                        id: design.categoryId,
-                                        name: '',
-                                        date: '',
-                                        religion: '',
-                                        daysLeft: 0,
-                                        gradient: status.gradient,
-                                        icon: status.icon,
-                                      ))
-                                  : MockData.festivals.firstWhere(
-                                      (f) => f.id == status.festivalId,
-                                      orElse: () => festival ?? MockData.festivals.first,
-                                    );
+                              final design = designById[status.id]!;
                               return StatusGridCard(
                                 status: status,
                                 width: double.infinity,
-                                isLiked: _liked.contains(status.id),
-                                onLike: () => setState(() {
-                                  if (!_liked.add(status.id)) {
-                                    _liked.remove(status.id);
-                                  }
-                                }),
-                                onUse: () {
-                                  // design_view fires once, from
-                                  // PreviewShareScreen.initState — not
-                                  // here too, or every open double-counts.
-                                  _openPreview(
-                                    context,
-                                    festival: statusFestival,
-                                    gradient: status.gradient,
-                                    design: design,
-                                    useFestivalImage: design == null,
-                                  );
-                                },
+                                isLiked: favorites.isFavorite(design.id),
+                                onLike: () => favorites.toggleFavorite(design),
+                                onUse: () => Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) => PreviewShareScreen(design: design),
+                                  ),
+                                ),
                               );
                             },
                           ),
