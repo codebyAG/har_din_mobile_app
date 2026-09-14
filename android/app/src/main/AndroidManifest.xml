@@ -1,4 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Required for every build type, not just debug/profile — the app
+         calls api-hardin.vocadose.com at runtime, so a release APK
+         without this permission silently fails every network request. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
     <application
         android:label="हर दिन"
         android:name="${applicationName}"
