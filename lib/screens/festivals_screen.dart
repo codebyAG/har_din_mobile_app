@@ -8,6 +8,7 @@ import '../presentation/providers/content_view_model.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
+import '../theme/app_icons.dart';
 import '../widgets/festival_list_tile.dart';
 import '../widgets/festive_glow.dart';
 import '../widgets/religion_filter_chip.dart';
@@ -59,7 +60,42 @@ class _FestivalsScreenState extends State<FestivalsScreen> {
                     AppSpacing.screenPadding,
                     0,
                   ),
-                  child: Text('सभी त्योहार', style: AppTextStyles.screenTitle()),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 40,
+                        height: 40,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [AppColors.secondary, AppColors.primary],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.primary.withValues(alpha: 0.3),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: const Icon(AppIcons.festivalsCat, size: 18, color: Colors.white),
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('सभी त्योहार', style: AppTextStyles.screenTitle()),
+                          Text(
+                            '${allFestivals.length} त्योहार',
+                            style: AppTextStyles.secondary(),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
                 const SizedBox(height: AppSpacing.md),
                 SizedBox(

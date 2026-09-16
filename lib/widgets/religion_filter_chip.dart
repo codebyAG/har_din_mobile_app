@@ -20,20 +20,37 @@ class ReligionFilterChip extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOut,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
         decoration: BoxDecoration(
-          color: selected ? AppColors.primary : AppColors.card,
+          gradient: selected
+              ? const LinearGradient(
+                  colors: [AppColors.secondary, AppColors.primary],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                )
+              : null,
+          color: selected ? null : AppColors.card,
           borderRadius: BorderRadius.circular(100),
           border: Border.all(
-            color: selected ? AppColors.primary : AppColors.border,
+            color: selected ? Colors.transparent : AppColors.border,
           ),
+          boxShadow: selected
+              ? [
+                  BoxShadow(
+                    color: AppColors.primary.withValues(alpha: 0.3),
+                    blurRadius: 10,
+                    offset: const Offset(0, 3),
+                  ),
+                ]
+              : null,
         ),
         child: Text(
           label,
           style: AppTextStyles.secondary(
             color: selected ? Colors.white : AppColors.textSecondary,
-          ).copyWith(fontWeight: FontWeight.w600),
+          ).copyWith(fontWeight: FontWeight.w700),
         ),
       ),
     );
