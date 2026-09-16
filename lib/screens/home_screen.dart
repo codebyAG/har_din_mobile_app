@@ -274,7 +274,7 @@ class _HomeContent extends StatelessWidget {
                 crossAxisCount: 3,
                 mainAxisSpacing: AppSpacing.md,
                 crossAxisSpacing: AppSpacing.md,
-                childAspectRatio: 0.72,
+                childAspectRatio: 0.66,
               ),
               delegate: SliverChildBuilderDelegate(
                 (context, i) {
@@ -564,7 +564,7 @@ class _HomeSkeleton extends StatelessWidget {
               crossAxisCount: 3,
               mainAxisSpacing: AppSpacing.md,
               crossAxisSpacing: AppSpacing.md,
-              childAspectRatio: 0.72,
+              childAspectRatio: 0.66,
             ),
             itemBuilder: (context, i) => const ShimmerBox(
               height: double.infinity,

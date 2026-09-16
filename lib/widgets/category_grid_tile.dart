@@ -19,52 +19,74 @@ class CategoryGridTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(AppSpacing.sm),
-        decoration: BoxDecoration(
-          color: AppColors.lightAccent,
-          borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(AppSpacing.xs),
-                child: category.iconUrl != null
-                    ? ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: CachedNetworkImage(
-                          imageUrl: category.iconUrl!,
-                          cacheManager: ImageCacheService.instance,
-                          fit: BoxFit.contain,
-                          memCacheWidth: 160,
-                          errorWidget: (context, url, error) => GradientTile(
+    final labelStyle = AppTextStyles.cardTitle().copyWith(fontSize: 13, height: 1.2);
+
+    return Material(
+      color: AppColors.lightAccent,
+      borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
+        onTap: onTap,
+        child: Ink(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.textPrimary.withValues(alpha: 0.05),
+                blurRadius: 8,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.sm),
+            child: Column(
+              children: [
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(AppSpacing.xs),
+                    child: category.iconUrl != null
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: CachedNetworkImage(
+                              imageUrl: category.iconUrl!,
+                              cacheManager: ImageCacheService.instance,
+                              fit: BoxFit.contain,
+                              memCacheWidth: 160,
+                              errorWidget: (context, url, error) => GradientTile(
+                                colors: category.gradient,
+                                icon: category.icon,
+                                iconSize: 26,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                          )
+                        : GradientTile(
                             colors: category.gradient,
                             icon: category.icon,
                             iconSize: 26,
                             borderRadius: BorderRadius.circular(12),
                           ),
-                        ),
-                      )
-                    : GradientTile(
-                        colors: category.gradient,
-                        icon: category.icon,
-                        iconSize: 26,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-              ),
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.xs),
+                // Fixed two-line budget (from the label style's own line
+                // height) instead of letting the Text size itself freely
+                // — guarantees room for a wrapped name so it never gets
+                // clipped against the grid row below it.
+                SizedBox(
+                  height: labelStyle.fontSize! * labelStyle.height! * 2,
+                  child: Text(
+                    category.name,
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: labelStyle,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: AppSpacing.xs),
-            Text(
-              category.name,
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              style: AppTextStyles.cardTitle(),
-            ),
-          ],
+          ),
         ),
       ),
     );
