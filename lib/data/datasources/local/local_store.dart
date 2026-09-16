@@ -10,19 +10,22 @@ import '../../../domain/entities/content_entities.dart';
 /// Everything the caching contract (§4) needs to remember between app
 /// opens: selected language, the last-known content version, when we
 /// last checked, the device id for analytics, and the payload itself.
+///
+/// Version, last-check-time and the payload file are all keyed **per
+/// language** (APP-CHANGES-01 §3) — two languages can share a version
+/// number, so a single global key would let a language switch silently
+/// keep showing the previous language's content.
 class LocalStore {
   const LocalStore();
 
   static const _kLanguage = 'har_din.language';
-  static const _kStoredVersion = 'har_din.stored_version';
-  static const _kLastVersionCheck = 'har_din.last_version_check';
   static const _kDeviceId = 'har_din.device_id';
 
   Future<SharedPreferences> get _prefs async => SharedPreferences.getInstance();
 
-  Future<File> _contentFile() async {
+  Future<File> _contentFile(String lang) async {
     final dir = await getApplicationDocumentsDirectory();
-    return File('${dir.path}/har_din_content.json');
+    return File('${dir.path}/har_din_content_$lang.json');
   }
 
   Future<File> _eventQueueFile() async {
@@ -41,21 +44,22 @@ class LocalStore {
 
   Future<void> setLanguage(String code) async => (await _prefs).setString(_kLanguage, code);
 
-  // --- version / cache bookkeeping ---
+  // --- version / cache bookkeeping — per language ---
 
-  Future<int?> getStoredVersion() async => (await _prefs).getInt(_kStoredVersion);
+  Future<int?> getStoredVersion(String lang) async =>
+      (await _prefs).getInt('har_din.stored_version.$lang');
 
-  Future<void> setStoredVersion(int version) async =>
-      (await _prefs).setInt(_kStoredVersion, version);
+  Future<void> setStoredVersion(String lang, int version) async =>
+      (await _prefs).setInt('har_din.stored_version.$lang', version);
 
-  Future<DateTime?> getLastVersionCheck() async {
-    final millis = (await _prefs).getInt(_kLastVersionCheck);
+  Future<DateTime?> getLastVersionCheck(String lang) async {
+    final millis = (await _prefs).getInt('har_din.last_version_check.$lang');
     if (millis == null) return null;
     return DateTime.fromMillisecondsSinceEpoch(millis);
   }
 
-  Future<void> setLastVersionCheck(DateTime time) async =>
-      (await _prefs).setInt(_kLastVersionCheck, time.millisecondsSinceEpoch);
+  Future<void> setLastVersionCheck(String lang, DateTime time) async =>
+      (await _prefs).setInt('har_din.last_version_check.$lang', time.millisecondsSinceEpoch);
 
   // --- device id (analytics batching only — not an account) ---
 
@@ -68,11 +72,11 @@ class LocalStore {
     return id;
   }
 
-  // --- content payload ---
+  // --- content payload — one file per language ---
 
-  Future<ContentPayload?> readContent() async {
+  Future<ContentPayload?> readContent(String lang) async {
     try {
-      final file = await _contentFile();
+      final file = await _contentFile(lang);
       if (!await file.exists()) return null;
       final raw = await file.readAsString();
       return ContentPayload.fromJson(jsonDecode(raw) as Map<String, dynamic>);
@@ -82,8 +86,8 @@ class LocalStore {
     }
   }
 
-  Future<void> writeContent(ContentPayload payload) async {
-    final file = await _contentFile();
+  Future<void> writeContent(String lang, ContentPayload payload) async {
+    final file = await _contentFile(lang);
     await file.writeAsString(jsonEncode(payload.toJson()));
   }
 

@@ -40,6 +40,7 @@ class CategoryGridTile extends StatelessWidget {
                           imageUrl: category.iconUrl!,
                           cacheManager: ImageCacheService.instance,
                           fit: BoxFit.contain,
+                          memCacheWidth: 160,
                           errorWidget: (context, url, error) => GradientTile(
                             colors: category.gradient,
                             icon: category.icon,

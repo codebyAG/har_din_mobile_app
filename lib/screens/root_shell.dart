@@ -38,12 +38,20 @@ class _RootShellState extends State<RootShell> {
     ProfileScreen(),
   ];
 
-  static const _tabs = [
-    (icon: AppIcons.home, activeIcon: AppIcons.homeSolid, label: 'होम'),
-    (icon: AppIcons.festivals, activeIcon: AppIcons.festivalsSolid, label: 'त्योहार'),
-    (icon: AppIcons.saved, activeIcon: AppIcons.savedSolid, label: 'मेरी क्रिएशन्स'),
-    (icon: AppIcons.profile, activeIcon: AppIcons.profileSolid, label: 'प्रोफाइल'),
-  ];
+  List<_TabSpec> _tabs(ContentViewModel viewModel) => [
+        (icon: AppIcons.home, activeIcon: AppIcons.homeSolid, label: viewModel.t('nav.home')),
+        (
+          icon: AppIcons.festivals,
+          activeIcon: AppIcons.festivalsSolid,
+          label: viewModel.t('nav.festivals'),
+        ),
+        (icon: AppIcons.saved, activeIcon: AppIcons.savedSolid, label: viewModel.t('nav.creations')),
+        (
+          icon: AppIcons.profile,
+          activeIcon: AppIcons.profileSolid,
+          label: viewModel.t('nav.profile'),
+        ),
+      ];
 
   @override
   void didChangeDependencies() {
@@ -58,6 +66,9 @@ class _RootShellState extends State<RootShell> {
       if (!mounted) return;
       context.read<ContentViewModel>().load(code);
       EventQueue.instance.record(HarDinEventType.appOpen);
+      // "Next app open" flush trigger (§8, APP-CHANGES-01 §4) — whatever
+      // the last session left queued goes out now, not just at 20 events.
+      EventQueue.instance.flush();
     });
   }
 
@@ -83,7 +94,7 @@ class _RootShellState extends State<RootShell> {
       body: IndexedStack(index: _index, children: _screens),
       bottomNavigationBar: _NavBar(
         selectedIndex: _index,
-        tabs: _tabs,
+        tabs: _tabs(context.watch<ContentViewModel>()),
         onTabTap: (i) => setState(() => _index = i),
       ),
     );

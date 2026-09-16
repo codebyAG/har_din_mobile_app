@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:uuid/uuid.dart';
 
+import '../../core/error/api_exceptions.dart';
 import '../../data/datasources/local/local_store.dart';
 import '../../data/datasources/remote/har_din_api_client.dart';
 
@@ -19,9 +20,10 @@ enum HarDinEventType {
 }
 
 /// Local-first analytics queue. Never calls the server synchronously
-/// from a user action — events are queued and flushed in batches of
-/// up to 200, on whichever comes first: ~20 queued, background, or next
-/// open (§8). A failure here must never be visible to the user.
+/// from a user action — events are queued and flushed in batches of up
+/// to 200, on whichever comes first: ~20 queued, app backgrounding, or
+/// the next app open (§8, APP-CHANGES-01 §4). A failure here must never
+/// be visible to the user.
 ///
 /// Kept as a simple infrastructure singleton (not DI-injected through
 /// Provider) — it holds no UI-relevant reactive state, so nothing ever
@@ -51,7 +53,9 @@ class EventQueue {
       'id': const Uuid().v4(),
       'design_id': designId,
       'type': type.wireName,
-      'at': DateTime.now().toIso8601String(),
+      // UTC + 'Z' — a bare local-time string with no offset is invalid
+      // per the contract and gets silently 400'd (APP-CHANGES-01 §4).
+      'at': DateTime.now().toUtc().toIso8601String(),
     });
     await _store.writeEventQueue(_pending);
     if (_pending.length >= _flushThreshold) {
@@ -59,17 +63,31 @@ class EventQueue {
     }
   }
 
+  /// Sends everything queued, chunked at 200 per request, looping until
+  /// the queue is drained or a retryable failure stops it. A batch the
+  /// server rejects as malformed (400) is dropped, not retried — it will
+  /// never succeed and would otherwise block every event behind it.
   Future<void> flush() async {
     await _ensureLoaded();
-    if (_pending.isEmpty) return;
-    final batch = _pending.take(_maxBatchSize).toList();
-    try {
-      final deviceId = await _store.getOrCreateDeviceId();
-      await _api.sendEvents(deviceId, batch);
-      _pending.removeRange(0, batch.length);
-      await _store.writeEventQueue(_pending);
-    } catch (_) {
-      // Fire and forget — keep the queue, retry on the next flush (§8).
+    final deviceId = await _store.getOrCreateDeviceId();
+
+    while (_pending.isNotEmpty) {
+      final batch = _pending.take(_maxBatchSize).toList();
+      try {
+        await _api.sendEvents(deviceId, batch);
+        _pending.removeRange(0, batch.length);
+        await _store.writeEventQueue(_pending);
+      } on ApiBadRequestException {
+        // Malformed and always will be — drop it so it can't wedge the
+        // rest of the queue behind it, then keep going with what's left.
+        _pending.removeRange(0, batch.length);
+        await _store.writeEventQueue(_pending);
+      } catch (_) {
+        // Network error / 5xx — keep the whole queue, retry on the next
+        // flush (§8). Stop looping; further attempts this call won't
+        // succeed either.
+        return;
+      }
     }
   }
 }

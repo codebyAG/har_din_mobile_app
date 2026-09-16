@@ -259,6 +259,12 @@ class ContentPayload {
   final List<Design> designs;
   final List<Occasion> occasions;
 
+  /// UI chrome labels for the requested language (APP-CHANGES-01 §2) —
+  /// e.g. `home.upcoming_festivals`, `nav.creations`. Looked up via
+  /// [AppStrings.resolve], never read directly by widgets, so a missing
+  /// key always falls back to the bundled copy instead of showing blank.
+  final Map<String, String> strings;
+
   const ContentPayload({
     required this.version,
     required this.languages,
@@ -269,6 +275,7 @@ class ContentPayload {
     required this.tags,
     required this.designs,
     required this.occasions,
+    this.strings = const {},
   });
 
   factory ContentPayload.fromJson(Map<String, dynamic> json) => ContentPayload(
@@ -296,6 +303,8 @@ class ContentPayload {
         occasions: (json['occasions'] as List<dynamic>? ?? [])
             .map((e) => Occasion.fromJson(e as Map<String, dynamic>))
             .toList(),
+        strings: (json['strings'] as Map<String, dynamic>? ?? {})
+            .map((k, v) => MapEntry(k, v as String)),
       );
 
   Map<String, dynamic> toJson() => {
@@ -308,6 +317,7 @@ class ContentPayload {
           'category_order': home.categoryOrder,
           'time_band_categories': home.timeBandCategories,
         },
+        'strings': strings,
         'banners': banners
             .map((b) => {
                   'id': b.id,

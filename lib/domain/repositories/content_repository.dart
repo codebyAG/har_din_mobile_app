@@ -20,4 +20,9 @@ abstract class ContentRepository {
   /// minutes unless [forceLanguageSwitch]), and only fetches the full
   /// payload when the version actually changed.
   Future<ContentLoadResult> loadContent(String lang, {bool forceLanguageSwitch = false});
+
+  /// `GET /v1/languages` (APP-CHANGES-01 §7) — 135 bytes, no `lang` param,
+  /// safe to call before one is chosen. Never throws; returns an empty
+  /// list on failure so the language-select screen can fall back.
+  Future<List<Language>> fetchLanguages();
 }

@@ -54,6 +54,9 @@ class StatusGridCard extends StatelessWidget {
                     fit: BoxFit.cover,
                     width: double.infinity,
                     height: double.infinity,
+                    // Grid tile, not the full display image — decode at
+                    // roughly the cell's pixel width, not the source size.
+                    memCacheWidth: 320,
                     errorWidget: (context, url, error) => GradientTile(
                       colors: status.gradient,
                       icon: status.icon,

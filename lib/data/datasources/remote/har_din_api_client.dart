@@ -30,6 +30,17 @@ class HarDinApiClient {
       ),
     );
 
+  /// `GET /v1/languages` (APP-CHANGES-01 §7) — no `lang` param, safe to
+  /// call before one is chosen; 135 bytes instead of a full content fetch.
+  Future<List<Language>> fetchLanguages() => _request(
+    method: 'GET',
+    path: '/v1/languages',
+    timeout: const Duration(seconds: 10),
+    parse: (data) => ((data as Map<String, dynamic>)['languages'] as List<dynamic>? ?? [])
+        .map((e) => Language.fromJson(e as Map<String, dynamic>))
+        .toList(),
+  );
+
   Future<VersionResponse> fetchVersion(String lang) => _request(
     method: 'GET',
     path: '/v1/version',
@@ -87,8 +98,10 @@ class HarDinApiClient {
       final status = e.response?.statusCode;
       if (status == 404) throw ApiNotFoundException();
       if (status == 429) throw ApiRateLimitedException();
+      if (status == 400) throw ApiBadRequestException('${e.response?.data}');
       throw ApiException(
         status != null ? 'HTTP $status' : e.message ?? 'network error',
+        statusCode: status,
       );
     }
   }

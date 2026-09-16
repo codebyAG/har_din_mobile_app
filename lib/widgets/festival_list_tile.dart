@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../models/festival.dart';
+import '../presentation/providers/content_view_model.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_icons.dart';
 import '../theme/app_spacing.dart';
@@ -15,6 +17,7 @@ class FestivalListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.watch<ContentViewModel>().t;
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -53,7 +56,7 @@ class FestivalListTile extends StatelessWidget {
                   Text(festival.date, style: AppTextStyles.secondary()),
                   const SizedBox(height: AppSpacing.xs),
                   Text(
-                    '${festival.daysLeft} दिन बाकी',
+                    t('festival.days_left', {'n': '${festival.daysLeft}'}),
                     style: AppTextStyles.secondary(color: AppColors.primary)
                         .copyWith(fontWeight: FontWeight.w600),
                   ),

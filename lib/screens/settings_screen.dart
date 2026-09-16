@@ -57,6 +57,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.watch<ContentViewModel>().t;
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(title: const Text('सेटिंग')),
@@ -68,17 +69,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
             _SettingsTile(
               icon: AppIcons.account,
               label: 'अकाउंट सेटिंग',
-              onTap: () => _snack('अकाउंट सेटिंग जल्द आ रही है'),
+              onTap: () => _snack(t('settings.account_soon')),
             ),
             _SettingsTile(
               icon: AppIcons.privacy,
               label: 'प्राइवेसी सेटिंग',
-              onTap: () => _snack('प्राइवेसी सेटिंग जल्द आ रही है'),
+              onTap: () => _snack(t('settings.privacy_soon')),
             ),
             _SettingsTile(
               icon: AppIcons.bell,
               label: 'नोटिफिकेशन',
-              onTap: () => _snack('नोटिफिकेशन सेटिंग जल्द आ रही है'),
+              onTap: () => _snack(t('settings.notifications_soon')),
             ),
             Consumer<AppLanguageController>(
               builder: (context, languageController, _) {
@@ -128,7 +129,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             _SettingsTile(
               icon: AppIcons.help,
               label: 'सहायता और सपोर्ट',
-              onTap: () => _snack('सहायता जल्द आ रही है'),
+              onTap: () => _snack(t('settings.help_soon')),
             ),
             _SettingsTile(
               icon: AppIcons.about,

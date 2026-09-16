@@ -25,19 +25,17 @@ class _Option {
 }
 
 class _LanguageSelectScreenState extends State<LanguageSelectScreen> {
-  // There is no endpoint to list languages before one is picked, so this
-  // is the fallback shown only if the bootstrap fetch below fails
-  // (offline on first-ever launch) — otherwise it's replaced with the
-  // real `languages[]` from the API.
+  // The API's fixed set (§3), shown only if `GET /v1/languages` fails
+  // (offline on first-ever launch) — otherwise replaced by the real
+  // response (APP-CHANGES-01 §7).
   static const _fallbackOptions = [
     _Option('hi', 'हिन्दी'),
     _Option('en', 'English'),
     _Option('mr', 'मराठी'),
   ];
-  static const _bootstrapLang = 'hi';
 
   List<_Option> _options = _fallbackOptions;
-  String _selected = _bootstrapLang;
+  String _selected = 'hi';
   bool _bootstrapping = true;
   bool _loading = false;
 
@@ -48,19 +46,17 @@ class _LanguageSelectScreenState extends State<LanguageSelectScreen> {
   }
 
   Future<void> _bootstrap() async {
-    // API-driven: fetch content in the base language just to read its
-    // `languages[]` list — the only way to know the real set before the
-    // user has picked one (§3 has no dedicated languages endpoint).
-    await context.read<ContentViewModel>().load(_bootstrapLang, forceLanguageSwitch: true);
+    // §7 — a dedicated, tiny endpoint (135 bytes, no `lang` param). No
+    // version check, no content fetch, no 22 KB thrown away if the user
+    // ends up picking a different language than the one this guessed.
+    final languages = await context.read<ContentViewModel>().fetchLanguages();
     if (!mounted) return;
-    final payload = context.read<ContentViewModel>().payload;
-    if (payload != null && payload.languages.isNotEmpty) {
-      final options = payload.languages.map((l) => _Option(l.code, l.label)).toList();
+    if (languages.isNotEmpty) {
+      final options = languages.map((l) => _Option(l.code, l.label)).toList();
       setState(() {
         _options = options;
-        _selected = options.any((o) => o.code == _bootstrapLang)
-            ? _bootstrapLang
-            : options.first.code;
+        _selected =
+            options.any((o) => o.code == 'hi') ? 'hi' : options.first.code;
       });
     }
     setState(() => _bootstrapping = false);
@@ -71,12 +67,8 @@ class _LanguageSelectScreenState extends State<LanguageSelectScreen> {
     final languageController = context.read<AppLanguageController>();
     await languageController.setLanguageCode(_selected);
     if (!context.mounted) return;
-    // Only re-fetch if the pick differs from what the bootstrap already
-    // loaded — the common case (base language) costs nothing extra.
-    if (_selected != _bootstrapLang) {
-      await context.read<ContentViewModel>().load(_selected, forceLanguageSwitch: true);
-    }
-    if (!context.mounted) return;
+    // The first real content fetch happens once in RootShell (§4) — not
+    // here, so a normal app open is still exactly one load() call.
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(builder: (_) => const RootShell()),
     );

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'core/services/event_queue.dart';
 import 'data/datasources/local/local_store.dart';
 import 'data/datasources/remote/har_din_api_client.dart';
 import 'data/repositories/content_repository_impl.dart';
@@ -14,8 +15,35 @@ void main() {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+/// §8 / APP-CHANGES-01 §4 — flush queued analytics events whenever the
+/// app is backgrounded, in addition to the ~20-event and next-open
+/// triggers already wired at their call sites (RootShell, EventQueue).
+class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused || state == AppLifecycleState.hidden) {
+      EventQueue.instance.flush();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

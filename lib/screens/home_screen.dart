@@ -1,6 +1,8 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../core/services/image_cache_service.dart';
 import '../core/services/time_band_service.dart';
 import '../core/utils/occasion_mapper.dart';
 import '../domain/entities/content_entities.dart';
@@ -15,10 +17,12 @@ import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
 import '../widgets/category_grid_tile.dart';
 import '../widgets/festive_glow.dart';
+import '../widgets/gradient_tile.dart';
 import '../widgets/promo_banner_carousel.dart';
 import '../widgets/section_header.dart';
 import '../widgets/shimmer_box.dart';
 import 'category_detail_screen.dart';
+import 'preview_share_screen.dart';
 import 'status_gallery_screen.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -111,6 +115,8 @@ class HomeScreen extends StatelessWidget {
                   child: payload == null
                       ? _LoadingOrError(
                           isLoading: viewModel.isLoading,
+                          loadFailedText: viewModel.t('home.load_failed'),
+                          retryText: viewModel.t('common.retry'),
                           onRetry: () => viewModel.load(
                             context.read<AppLanguageController>().code,
                           ),
@@ -135,9 +141,16 @@ class HomeScreen extends StatelessWidget {
 
 class _LoadingOrError extends StatelessWidget {
   final bool isLoading;
+  final String loadFailedText;
+  final String retryText;
   final VoidCallback onRetry;
 
-  const _LoadingOrError({required this.isLoading, required this.onRetry});
+  const _LoadingOrError({
+    required this.isLoading,
+    required this.loadFailedText,
+    required this.retryText,
+    required this.onRetry,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -150,16 +163,12 @@ class _LoadingOrError extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              'कंटेंट लोड नहीं हो पाया। कृपया इंटरनेट जाँचें।',
-              textAlign: TextAlign.center,
-              style: AppTextStyles.secondary(),
-            ),
+            Text(loadFailedText, textAlign: TextAlign.center, style: AppTextStyles.secondary()),
             const SizedBox(height: AppSpacing.md),
             GestureDetector(
               onTap: onRetry,
               child: Text(
-                'फिर से कोशिश करें',
+                retryText,
                 style: AppTextStyles.body(color: AppColors.primary)
                     .copyWith(fontWeight: FontWeight.w600),
               ),
@@ -207,12 +216,13 @@ class _HomeContent extends StatelessWidget {
       return;
     }
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('यह फीचर जल्द आ रहा है')),
+      SnackBar(content: Text(context.read<ContentViewModel>().t('common.coming_soon'))),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final t = context.watch<ContentViewModel>().t;
     return CustomScrollView(
       slivers: [
         if (banners.isNotEmpty)
@@ -247,7 +257,7 @@ class _HomeContent extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: AppSpacing.xl),
               child: Center(
-                child: Text('अभी कोई श्रेणी उपलब्ध नहीं है', style: AppTextStyles.secondary()),
+                child: Text(t('home.no_categories'), style: AppTextStyles.secondary()),
               ),
             ),
           )
@@ -294,6 +304,7 @@ class _OccasionsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.watch<ContentViewModel>().t;
     final now = DateTime.now();
     final upcoming = occasions.toList()
       ..sort((a, b) => a.daysUntil(now).compareTo(b.daysUntil(now)));
@@ -308,7 +319,9 @@ class _OccasionsSection extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
             child: SectionHeader(
-              title: relevant.first.daysUntil(now) == 0 ? 'आज' : 'आने वाले त्योहार',
+              title: relevant.first.daysUntil(now) == 0
+                  ? t('home.today')
+                  : t('home.upcoming_festivals'),
             ),
           ),
           const SizedBox(height: AppSpacing.sm),
@@ -349,7 +362,7 @@ class _OccasionsSection extends StatelessWidget {
                         ),
                         const SizedBox(height: AppSpacing.xs),
                         Text(
-                          days == 0 ? 'आज है' : '$days दिन बाकी',
+                          days == 0 ? t('festival.today') : t('festival.days_left', {'n': '$days'}),
                           style: AppTextStyles.secondary(color: AppColors.primary)
                               .copyWith(fontWeight: FontWeight.w600),
                         ),
@@ -366,23 +379,45 @@ class _OccasionsSection extends StatelessWidget {
   }
 }
 
+/// APP-CHANGES-01 §1 — the band section renders its designs inline
+/// (thumbnail strip, tap → Preview & Share directly), not a chip that
+/// leads to a second screen. §6 — if the matched categories have no
+/// designs for the current band, fall back to `home.carousel_category_id`
+/// rather than rendering an empty section.
 class _TimeBandSection extends StatelessWidget {
   final ContentPayload payload;
 
   const _TimeBandSection({required this.payload});
 
+  List<Design> _designsFor(String band) {
+    final ids = payload.home.timeBandCategories[band] ?? const <String>[];
+    var pool = payload.designs
+        .where((d) => ids.contains(d.categoryId) && d.matchesBand(band))
+        .toList();
+
+    if (pool.isEmpty && payload.home.carouselCategoryId != null) {
+      pool = payload.designs
+          .where((d) => d.categoryId == payload.home.carouselCategoryId && d.matchesBand(band))
+          .toList();
+    }
+
+    pool.sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+    return pool;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final t = context.watch<ContentViewModel>().t;
     final band = TimeBandService.currentBand(payload.timeBands);
-    final ids = payload.home.timeBandCategories[band] ?? const <String>[];
-    final matched = payload.categories.where((c) => ids.contains(c.id)).toList();
-    if (matched.isEmpty) return const SizedBox.shrink();
+    final designs = _designsFor(band);
+    if (designs.isEmpty) return const SizedBox.shrink();
 
-    const heading = {
-      'morning': 'सुप्रभात के लिए',
-      'afternoon': 'दोपहर के लिए',
-      'evening': 'शाम के लिए',
-      'night': 'शुभ रात्रि के लिए',
+    final headingKey = switch (band) {
+      'morning' => 'home.band.morning',
+      'afternoon' => 'home.band.afternoon',
+      'evening' => 'home.band.evening',
+      'night' => 'home.band.night',
+      _ => 'home.band.default',
     };
 
     return Padding(
@@ -392,41 +427,41 @@ class _TimeBandSection extends StatelessWidget {
         children: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
-            child: SectionHeader(title: heading[band] ?? 'अभी के लिए'),
+            child: SectionHeader(title: t(headingKey)),
           ),
           const SizedBox(height: AppSpacing.sm),
           SizedBox(
-            height: 36,
+            height: 128,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
-              itemCount: matched.length,
+              itemCount: designs.length,
               separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.sm),
               itemBuilder: (context, i) {
-                final category = matched[i];
+                final design = designs[i];
                 return GestureDetector(
                   onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => CategoryDetailScreen(
-                        category: HomeCategory(
-                          id: category.id,
-                          name: category.name,
-                          iconUrl: category.iconUrl,
+                    MaterialPageRoute(builder: (_) => PreviewShareScreen(design: design)),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
+                    child: CachedNetworkImage(
+                      imageUrl: design.thumbnailUrl,
+                      cacheManager: ImageCacheService.instance,
+                      width: 96,
+                      height: 128,
+                      fit: BoxFit.cover,
+                      memCacheWidth: 192,
+                      errorWidget: (context, url, error) => const SizedBox(
+                        width: 96,
+                        height: 128,
+                        child: GradientTile(
+                          colors: [AppColors.secondary, AppColors.primary],
                           icon: AppIcons.celebration,
-                          gradient: const [AppColors.secondary, AppColors.primary],
+                          iconSize: 24,
                         ),
                       ),
                     ),
-                  ),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: AppColors.card,
-                      borderRadius: BorderRadius.circular(100),
-                      border: Border.all(color: AppColors.border),
-                    ),
-                    child: Text(category.name, style: AppTextStyles.secondary()),
                   ),
                 );
               },

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../presentation/providers/content_view_model.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_icons.dart';
 import '../theme/app_spacing.dart';
@@ -25,6 +27,7 @@ class AppDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.watch<ContentViewModel>().t;
     return Drawer(
       backgroundColor: AppColors.background,
       child: SafeArea(
@@ -50,22 +53,22 @@ class AppDrawer extends StatelessWidget {
             const SizedBox(height: AppSpacing.sm),
             _DrawerTile(
               icon: AppIcons.home,
-              label: 'होम',
+              label: t('nav.home'),
               onTap: () => _goToTab(context, 0),
             ),
             _DrawerTile(
               icon: AppIcons.festivals,
-              label: 'त्योहार',
+              label: t('nav.festivals'),
               onTap: () => _goToTab(context, 1),
             ),
             _DrawerTile(
               icon: AppIcons.saved,
-              label: 'मेरी क्रिएशन्स',
+              label: t('nav.creations'),
               onTap: () => _goToTab(context, 2),
             ),
             _DrawerTile(
               icon: AppIcons.profile,
-              label: 'प्रोफाइल',
+              label: t('nav.profile'),
               onTap: () => _goToTab(context, 3),
             ),
             // Feed is unreachable in v1 — no posts, no comments, no users (§5).
