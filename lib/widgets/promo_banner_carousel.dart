@@ -54,7 +54,7 @@ class _PromoBannerCarouselState extends State<PromoBannerCarousel> {
         // (full width minus its own horizontal padding), not the outer
         // sliver width — otherwise BoxFit.cover crops into a mismatched
         // box instead of showing the image at its true proportions.
-        final cardWidth = constraints.maxWidth;
+        final cardWidth = constraints.maxWidth - AppSpacing.screenPadding * 2;
         final cardHeight = cardWidth / _aspectRatio;
 
         return Column(
@@ -67,46 +67,50 @@ class _PromoBannerCarouselState extends State<PromoBannerCarousel> {
                 onPageChanged: (i) => setState(() => _page = i),
                 itemBuilder: (context, i) {
                   final banner = widget.banners[i];
-                  return GestureDetector(
-                    onTap: () => widget.onTap(banner),
-                    child: Container(
-                      // A gradient "border" — BoxDecoration.border can't
-                      // take a gradient directly, so this is a gradient-
-                      // filled outer box with the image inset by the
-                      // border width, clipped to a slightly smaller radius.
-                      padding: const EdgeInsets.all(2.5),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(22),
-                        gradient: const LinearGradient(
-                          colors: [AppColors.secondary, AppColors.primary],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.textPrimary.withValues(alpha: 0.14),
-                            blurRadius: 18,
-                            offset: const Offset(0, 8),
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
+                    child: GestureDetector(
+                      onTap: () => widget.onTap(banner),
+                      child: Container(
+                        // A gradient "border" — BoxDecoration.border can't
+                        // take a gradient directly, so this is a gradient-
+                        // filled outer box with the image inset by the
+                        // border width, clipped to a slightly smaller radius.
+                        padding: const EdgeInsets.all(2.5),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(22),
+                          gradient: const LinearGradient(
+                            colors: [AppColors.secondary, AppColors.primary],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
                           ),
-                        ],
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(20),
-                        // cover, not contain — with contain, a real banner
-                        // whose actual pixel aspect ratio isn't exactly
-                        // 1080:480 letterboxes inside the rounded box,
-                        // leaving the image's own sharp rectangular edge
-                        // visible in the middle of it. cover always fills
-                        // the rounded container edge-to-edge.
-                        child: CachedNetworkImage(
-                          imageUrl: banner.imageUrl,
-                          cacheManager: ImageCacheService.instance,
-                          // Inset by the border padding (2.5 each side) —
-                          // sizing to the full card here would push past
-                          // the space the border padding actually leaves.
-                          width: cardWidth - 5,
-                          height: cardHeight - 5,
-                          fit: BoxFit.cover,
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.textPrimary.withValues(alpha: 0.14),
+                              blurRadius: 18,
+                              offset: const Offset(0, 8),
+                            ),
+                          ],
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(20),
+                          // cover, not contain — with contain, a real
+                          // banner whose actual pixel aspect ratio isn't
+                          // exactly 1080:480 letterboxes inside the
+                          // rounded box, leaving the image's own sharp
+                          // rectangular edge visible in the middle of it.
+                          // cover always fills the rounded container
+                          // edge-to-edge.
+                          child: CachedNetworkImage(
+                            imageUrl: banner.imageUrl,
+                            cacheManager: ImageCacheService.instance,
+                            // Inset by the border padding (2.5 each side)
+                            // — sizing to the full card here would push
+                            // past the space the border padding leaves.
+                            width: cardWidth - 5,
+                            height: cardHeight - 5,
+                            fit: BoxFit.cover,
+                          ),
                         ),
                       ),
                     ),
