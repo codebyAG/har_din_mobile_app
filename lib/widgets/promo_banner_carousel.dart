@@ -54,7 +54,7 @@ class _PromoBannerCarouselState extends State<PromoBannerCarousel> {
         // (full width minus its own horizontal padding), not the outer
         // sliver width — otherwise BoxFit.cover crops into a mismatched
         // box instead of showing the image at its true proportions.
-        final cardWidth = constraints.maxWidth - AppSpacing.screenPadding * 2;
+        final cardWidth = constraints.maxWidth;
         final cardHeight = cardWidth / _aspectRatio;
 
         return Column(
@@ -67,20 +67,16 @@ class _PromoBannerCarouselState extends State<PromoBannerCarousel> {
                 onPageChanged: (i) => setState(() => _page = i),
                 itemBuilder: (context, i) {
                   final banner = widget.banners[i];
-                  return Padding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
-                    child: GestureDetector(
-                      onTap: () => widget.onTap(banner),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-                        child: CachedNetworkImage(
-                          imageUrl: banner.imageUrl,
-                          cacheManager: ImageCacheService.instance,
-                          width: cardWidth,
-                          height: cardHeight,
-                          fit: BoxFit.contain,
-                        ),
+                  return GestureDetector(
+                    onTap: () => widget.onTap(banner),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
+                      child: CachedNetworkImage(
+                        imageUrl: banner.imageUrl,
+                        cacheManager: ImageCacheService.instance,
+                        width: cardWidth,
+                        height: cardHeight,
+                        fit: BoxFit.contain,
                       ),
                     ),
                   );

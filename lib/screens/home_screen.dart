@@ -325,52 +325,58 @@ class _OccasionsSection extends StatelessWidget {
             ),
           ),
           const SizedBox(height: AppSpacing.sm),
-          SizedBox(
-            height: 96,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
-              itemCount: relevant.length,
-              separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.sm),
-              itemBuilder: (context, i) {
-                final occasion = relevant[i];
-                final days = occasion.daysUntil(now);
-                return GestureDetector(
-                  onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => StatusGalleryScreen(
-                        festival: OccasionMapper.fromOccasion(occasion, now: now),
-                      ),
-                    ),
-                  ),
-                  child: Container(
-                    width: 120,
-                    padding: const EdgeInsets.all(AppSpacing.sm),
-                    decoration: BoxDecoration(
-                      color: AppColors.lightAccent,
-                      borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          occasion.name,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: AppTextStyles.cardTitle(),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
+            child: IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  for (var i = 0; i < relevant.length; i++) ...[
+                    if (i > 0) const SizedBox(width: AppSpacing.sm),
+                    Builder(builder: (context) {
+                      final occasion = relevant[i];
+                      final days = occasion.daysUntil(now);
+                      return GestureDetector(
+                        onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => StatusGalleryScreen(
+                              festival: OccasionMapper.fromOccasion(occasion, now: now),
+                            ),
+                          ),
                         ),
-                        const SizedBox(height: AppSpacing.xs),
-                        Text(
-                          days == 0 ? t('festival.today') : t('festival.days_left', {'n': '$days'}),
-                          style: AppTextStyles.secondary(color: AppColors.primary)
-                              .copyWith(fontWeight: FontWeight.w600),
+                        child: Container(
+                          width: 150,
+                          padding: const EdgeInsets.all(AppSpacing.sm),
+                          decoration: BoxDecoration(
+                            color: AppColors.lightAccent,
+                            borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                occasion.name,
+                                style: AppTextStyles.cardTitle(),
+                              ),
+                              const SizedBox(height: AppSpacing.xs),
+                              Text(
+                                days == 0
+                                    ? t('festival.today')
+                                    : t('festival.days_left', {'n': '$days'}),
+                                style: AppTextStyles.secondary(color: AppColors.primary)
+                                    .copyWith(fontWeight: FontWeight.w600),
+                              ),
+                            ],
+                          ),
                         ),
-                      ],
-                    ),
-                  ),
-                );
-              },
+                      );
+                    }),
+                  ],
+                ],
+              ),
             ),
           ),
         ],
