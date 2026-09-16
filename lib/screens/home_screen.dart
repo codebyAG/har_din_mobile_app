@@ -325,58 +325,121 @@ class _OccasionsSection extends StatelessWidget {
             ),
           ),
           const SizedBox(height: AppSpacing.sm),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
-            child: IntrinsicHeight(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  for (var i = 0; i < relevant.length; i++) ...[
-                    if (i > 0) const SizedBox(width: AppSpacing.sm),
-                    Builder(builder: (context) {
-                      final occasion = relevant[i];
-                      final days = occasion.daysUntil(now);
-                      return GestureDetector(
-                        onTap: () => Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => StatusGalleryScreen(
-                              festival: OccasionMapper.fromOccasion(occasion, now: now),
+          SizedBox(
+            height: 176,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
+              itemCount: relevant.length,
+              separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.sm),
+              itemBuilder: (context, i) {
+                final occasion = relevant[i];
+                final days = occasion.daysUntil(now);
+                final festival = OccasionMapper.fromOccasion(occasion, now: now);
+                final urgent = days <= 2;
+
+                return GestureDetector(
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => StatusGalleryScreen(festival: festival),
+                    ),
+                  ),
+                  child: Container(
+                    width: 130,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      gradient: LinearGradient(
+                        colors: festival.gradient,
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: festival.gradient.last.withValues(alpha: 0.35),
+                          blurRadius: 16,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        Positioned(
+                          right: -18,
+                          bottom: -18,
+                          child: Icon(
+                            festival.icon,
+                            size: 92,
+                            color: Colors.white.withValues(alpha: 0.14),
+                          ),
+                        ),
+                        Positioned.fill(
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  Colors.black.withValues(alpha: 0.0),
+                                  Colors.black.withValues(alpha: 0.35),
+                                ],
+                                stops: const [0.5, 1.0],
+                              ),
                             ),
                           ),
                         ),
-                        child: Container(
-                          width: 150,
-                          padding: const EdgeInsets.all(AppSpacing.sm),
-                          decoration: BoxDecoration(
-                            color: AppColors.lightAccent,
-                            borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                occasion.name,
-                                style: AppTextStyles.cardTitle(),
+                        Positioned(
+                          top: 8,
+                          left: 8,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: urgent
+                                    ? const [Color(0xFFFF7A70), AppColors.like]
+                                    : const [AppColors.secondary, AppColors.primary],
                               ),
-                              const SizedBox(height: AppSpacing.xs),
-                              Text(
-                                days == 0
-                                    ? t('festival.today')
-                                    : t('festival.days_left', {'n': '$days'}),
-                                style: AppTextStyles.secondary(color: AppColors.primary)
-                                    .copyWith(fontWeight: FontWeight.w600),
-                              ),
-                            ],
+                              borderRadius: BorderRadius.circular(100),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: (urgent ? AppColors.like : AppColors.primary)
+                                      .withValues(alpha: 0.4),
+                                  blurRadius: 6,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Text(
+                              days == 0 ? t('festival.today') : t('festival.days_left', {'n': '$days'}),
+                              style: AppTextStyles.secondary(color: Colors.white)
+                                  .copyWith(fontWeight: FontWeight.w700, fontSize: 10.5),
+                            ),
                           ),
                         ),
-                      );
-                    }),
-                  ],
-                ],
-              ),
+                        Positioned(
+                          left: AppSpacing.sm,
+                          right: AppSpacing.sm,
+                          bottom: AppSpacing.sm,
+                          child: Text(
+                            occasion.name,
+                            maxLines: 2,
+                            style: AppTextStyles.cardTitle(color: Colors.white).copyWith(
+                              fontSize: 14,
+                              shadows: [
+                                Shadow(
+                                  color: Colors.black.withValues(alpha: 0.4),
+                                  blurRadius: 6,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
             ),
           ),
         ],
