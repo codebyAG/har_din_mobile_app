@@ -8,7 +8,6 @@ import '../theme/app_colors.dart';
 import '../theme/app_icons.dart';
 import '../theme/app_text_styles.dart';
 import '../widgets/app_drawer.dart';
-import '../widgets/glass_container.dart';
 import 'festivals_screen.dart';
 import 'home_screen.dart';
 import 'language_select_screen.dart';
@@ -103,6 +102,10 @@ class _RootShellState extends State<RootShell> {
 
 typedef _TabSpec = ({IconData icon, IconData activeIcon, String label});
 
+/// A floating pill dock, not an edge-to-edge bar — the selected tab
+/// expands into a gradient capsule with its label; the rest stay as
+/// plain icons. Reads as a single moving piece rather than four static
+/// buttons with an underline.
 class _NavBar extends StatelessWidget {
   final int selectedIndex;
   final List<_TabSpec> tabs;
@@ -117,36 +120,41 @@ class _NavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.of(context).padding.bottom;
-    const barContentHeight = 64.0;
-    final barHeight = barContentHeight + bottomInset;
 
-    return Container(
-      height: barHeight,
-      decoration: BoxDecoration(
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.textPrimary.withValues(alpha: 0.1),
-            blurRadius: 24,
-            offset: const Offset(0, -4),
-          ),
-        ],
-      ),
-      child: GlassContainer(
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        tint: AppColors.card,
-        tintOpacity: 0.72,
-        border: const Border(
-          top: BorderSide(color: Colors.white, width: 1),
+    return Padding(
+      // Clears the system inset (gesture bar / home indicator) *and*
+      // adds a visible gap on top of it — otherwise the pill just sits
+      // flush against the safe-area edge instead of reading as floating.
+      padding: EdgeInsets.fromLTRB(16, 0, 16, bottomInset + 16),
+      child: Container(
+        height: 66,
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        decoration: BoxDecoration(
+          color: AppColors.card,
+          borderRadius: BorderRadius.circular(28),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.textPrimary.withValues(alpha: 0.14),
+              blurRadius: 28,
+              offset: const Offset(0, 12),
+            ),
+          ],
         ),
-        child: Padding(
-          padding: EdgeInsets.only(bottom: bottomInset),
-          child: Row(
-            children: [
-              for (var i = 0; i < tabs.length; i++)
-                _NavTab(tab: tabs[i], selected: selectedIndex == i, onTap: () => onTabTap(i)),
-            ],
-          ),
+        // Not Expanded/equal-width — an equal quarter-share is too
+        // narrow to fit the longest label ("मेरी क्रिएशन्स") without
+        // truncating it. Each tab sizes to its own content instead
+        // (icon-only when idle, icon+full label when selected), and
+        // spaceEvenly distributes whatever room is left as gaps.
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            for (var i = 0; i < tabs.length; i++)
+              _NavTab(
+                tab: tabs[i],
+                selected: selectedIndex == i,
+                onTap: () => onTabTap(i),
+              ),
+          ],
         ),
       ),
     );
@@ -162,38 +170,63 @@ class _NavTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
         onTap: onTap,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              selected ? tab.activeIcon : tab.icon,
-              size: 19,
-              color: selected ? AppColors.primary : AppColors.textSecondary,
+        child: Center(
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 260),
+            curve: Curves.easeOutCubic,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: BoxDecoration(
+              gradient: selected
+                  ? const LinearGradient(
+                      colors: [AppColors.secondary, AppColors.primary],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    )
+                  : null,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: selected
+                  ? [
+                      BoxShadow(
+                        color: AppColors.primary.withValues(alpha: 0.35),
+                        blurRadius: 12,
+                        offset: const Offset(0, 5),
+                      ),
+                    ]
+                  : null,
             ),
-            const SizedBox(height: 4),
-            Text(
-              tab.label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: AppTextStyles.bottomNav(
-                color: selected ? AppColors.primary : AppColors.textSecondary,
-              ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  selected ? tab.activeIcon : tab.icon,
+                  size: 19,
+                  color: selected ? Colors.white : AppColors.textSecondary,
+                ),
+                AnimatedSize(
+                  duration: const Duration(milliseconds: 220),
+                  curve: Curves.easeOut,
+                  alignment: Alignment.centerLeft,
+                  child: selected
+                      ? Padding(
+                          padding: const EdgeInsets.only(left: 6),
+                          child: Text(
+                            tab.label,
+                            maxLines: 1,
+                            softWrap: false,
+                            style: AppTextStyles.bottomNav(color: Colors.white)
+                                .copyWith(fontWeight: FontWeight.w700, fontSize: 11.5),
+                          ),
+                        )
+                      : const SizedBox(height: 19),
+                ),
+              ],
             ),
-            const SizedBox(height: 2),
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              width: selected ? 14 : 0,
-              height: 3,
-              decoration: BoxDecoration(
-                color: AppColors.primary,
-                borderRadius: BorderRadius.circular(100),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
