@@ -474,6 +474,19 @@ class _TimeBandSection extends StatelessWidget {
     return pool;
   }
 
+  static const _bandStyle = {
+    'morning': (icon: AppIcons.sun, gradient: [AppColors.secondary, AppColors.primary]),
+    'afternoon': (
+      icon: AppIcons.goodDay,
+      gradient: [Color(0xFF6FA8E8), Color(0xFF3D6FC2)],
+    ),
+    'evening': (
+      icon: AppIcons.goodDay,
+      gradient: [Color(0xFFFF8A3D), AppColors.primaryDark],
+    ),
+    'night': (icon: AppIcons.moon, gradient: [Color(0xFF3A2418), Color(0xFF6E6153)]),
+  };
+
   @override
   Widget build(BuildContext context) {
     final t = context.watch<ContentViewModel>().t;
@@ -488,6 +501,8 @@ class _TimeBandSection extends StatelessWidget {
       'night' => 'home.band.night',
       _ => 'home.band.default',
     };
+    final style = _bandStyle[band] ??
+        (icon: AppIcons.celebration, gradient: [AppColors.secondary, AppColors.primary]);
 
     return Padding(
       padding: const EdgeInsets.only(top: AppSpacing.lg),
@@ -496,11 +511,37 @@ class _TimeBandSection extends StatelessWidget {
         children: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
-            child: SectionHeader(title: t(headingKey)),
+            child: Row(
+              children: [
+                Container(
+                  width: 34,
+                  height: 34,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: style.gradient,
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(11),
+                    boxShadow: [
+                      BoxShadow(
+                        color: style.gradient.last.withValues(alpha: 0.35),
+                        blurRadius: 8,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: Icon(style.icon, size: 15, color: Colors.white),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                Text(t(headingKey), style: AppTextStyles.sectionHeading()),
+              ],
+            ),
           ),
           const SizedBox(height: AppSpacing.sm),
           SizedBox(
-            height: 128,
+            height: 152,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
@@ -512,24 +553,69 @@ class _TimeBandSection extends StatelessWidget {
                   onTap: () => Navigator.of(context).push(
                     MaterialPageRoute(builder: (_) => PreviewShareScreen(design: design)),
                   ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-                    child: CachedNetworkImage(
-                      imageUrl: design.thumbnailUrl,
-                      cacheManager: ImageCacheService.instance,
-                      width: 96,
-                      height: 128,
-                      fit: BoxFit.cover,
-                      memCacheWidth: 192,
-                      errorWidget: (context, url, error) => const SizedBox(
-                        width: 96,
-                        height: 128,
-                        child: GradientTile(
-                          colors: [AppColors.secondary, AppColors.primary],
-                          icon: AppIcons.celebration,
-                          iconSize: 24,
+                  child: Container(
+                    width: 110,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(18),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.textPrimary.withValues(alpha: 0.12),
+                          blurRadius: 14,
+                          offset: const Offset(0, 6),
                         ),
-                      ),
+                      ],
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        CachedNetworkImage(
+                          imageUrl: design.thumbnailUrl,
+                          cacheManager: ImageCacheService.instance,
+                          fit: BoxFit.cover,
+                          memCacheWidth: 220,
+                          errorWidget: (context, url, error) => GradientTile(
+                            colors: style.gradient,
+                            icon: style.icon,
+                            iconSize: 24,
+                          ),
+                        ),
+                        Positioned.fill(
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  Colors.transparent,
+                                  Colors.black.withValues(alpha: 0.45),
+                                ],
+                                stops: const [0.6, 1.0],
+                              ),
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          right: 6,
+                          bottom: 6,
+                          child: Container(
+                            width: 24,
+                            height: 24,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(colors: style.gradient),
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.25),
+                                  blurRadius: 4,
+                                ),
+                              ],
+                            ),
+                            child: const Icon(AppIcons.share, size: 11, color: Colors.white),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 );
