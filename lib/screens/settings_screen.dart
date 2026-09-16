@@ -60,27 +60,65 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final t = context.watch<ContentViewModel>().t;
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(title: const Text('सेटिंग')),
+      appBar: AppBar(
+        backgroundColor: AppColors.background,
+        surfaceTintColor: AppColors.background,
+        elevation: 0,
+        titleSpacing: 0,
+        title: Row(
+          children: [
+            Container(
+              width: 36,
+              height: 36,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [AppColors.secondary, AppColors.primary],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(11),
+              ),
+              child: const Icon(AppIcons.settingsGear, size: 16, color: Colors.white),
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            Text('सेटिंग', style: AppTextStyles.screenTitle()),
+          ],
+        ),
+      ),
       body: SafeArea(
         top: false,
         child: ListView(
-          padding: const EdgeInsets.all(AppSpacing.screenPadding),
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.screenPadding,
+            0,
+            AppSpacing.screenPadding,
+            AppSpacing.xxl,
+          ),
           children: [
+            const _SectionLabel('अकाउंट'),
+            const SizedBox(height: AppSpacing.sm),
             _SettingsTile(
               icon: AppIcons.account,
+              gradient: const [Color(0xFFFF8A3D), AppColors.primary],
               label: 'अकाउंट सेटिंग',
               onTap: () => _snack(t('settings.account_soon')),
             ),
             _SettingsTile(
               icon: AppIcons.privacy,
+              gradient: const [Color(0xFF6FA8E8), Color(0xFF3D6FC2)],
               label: 'प्राइवेसी सेटिंग',
               onTap: () => _snack(t('settings.privacy_soon')),
             ),
             _SettingsTile(
               icon: AppIcons.bell,
+              gradient: const [Color(0xFFFFC96B), AppColors.secondary],
               label: 'नोटिफिकेशन',
               onTap: () => _snack(t('settings.notifications_soon')),
             ),
+            const SizedBox(height: AppSpacing.lg),
+            const _SectionLabel('प्राथमिकताएं'),
+            const SizedBox(height: AppSpacing.sm),
             Consumer<AppLanguageController>(
               builder: (context, languageController, _) {
                 // Real `languages[]` once content has loaded; the fixed
@@ -97,6 +135,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     .key;
                 return _SettingsTile(
                   icon: AppIcons.language,
+                  gradient: const [Color(0xFF4FC077), AppColors.success],
                   label: 'भाषा',
                   value: currentLabel,
                   onTap: () => _pickOption(
@@ -117,6 +156,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             _SettingsTile(
               icon: AppIcons.theme,
+              gradient: const [Color(0xFF8C7C6C), AppColors.textSecondary],
               label: 'थीम',
               value: _theme,
               onTap: () => _pickOption(
@@ -126,13 +166,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 (v) => setState(() => _theme = v),
               ),
             ),
+            const SizedBox(height: AppSpacing.lg),
+            const _SectionLabel('सहायता'),
+            const SizedBox(height: AppSpacing.sm),
             _SettingsTile(
               icon: AppIcons.help,
+              gradient: const [Color(0xFFFF7A70), AppColors.like],
               label: 'सहायता और सपोर्ट',
               onTap: () => _snack(t('settings.help_soon')),
             ),
             _SettingsTile(
               icon: AppIcons.about,
+              gradient: const [Color(0xFFB09B8C), Color(0xFF6E6153)],
               label: 'ऐप के बारे में',
               onTap: () => showAboutDialog(
                 context: context,
@@ -143,6 +188,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             _SettingsTile(
               icon: AppIcons.download,
+              gradient: const [Color(0xFF6FA8E8), Color(0xFF3D6FC2)],
               label: 'कैश खाली करें',
               onTap: () async {
                 await ImageCacheService.instance.emptyCache();
@@ -158,14 +204,51 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 }
 
+class _SectionLabel extends StatelessWidget {
+  final String text;
+
+  const _SectionLabel(this.text);
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          width: 3,
+          height: 14,
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [AppColors.secondary, AppColors.primary],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
+            borderRadius: BorderRadius.circular(4),
+          ),
+        ),
+        const SizedBox(width: AppSpacing.xs),
+        Text(
+          text,
+          style: AppTextStyles.secondary().copyWith(
+            fontWeight: FontWeight.w700,
+            letterSpacing: 0.3,
+            color: AppColors.textPrimary,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 class _SettingsTile extends StatelessWidget {
   final IconData icon;
+  final List<Color> gradient;
   final String label;
   final String? value;
   final VoidCallback onTap;
 
   const _SettingsTile({
     required this.icon,
+    required this.gradient,
     required this.label,
     required this.onTap,
     this.value,
@@ -173,27 +256,64 @@ class _SettingsTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: AppSpacing.sm),
-        padding: const EdgeInsets.all(AppSpacing.md),
-        decoration: BoxDecoration(
-          color: AppColors.card,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.border),
-        ),
-        child: Row(
-          children: [
-            Icon(icon, size: 18, color: AppColors.primary),
-            const SizedBox(width: AppSpacing.md),
-            Expanded(child: Text(label, style: AppTextStyles.body())),
-            if (value != null) ...[
-              Text(value!, style: AppTextStyles.secondary()),
-              const SizedBox(width: AppSpacing.xs),
-            ],
-            const Icon(AppIcons.chevronRight, size: 16, color: AppColors.textSecondary),
-          ],
+    return Container(
+      margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+      decoration: BoxDecoration(
+        color: AppColors.card,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.textPrimary.withValues(alpha: 0.05),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            child: Row(
+              children: [
+                Container(
+                  width: 38,
+                  height: 38,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: gradient,
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: gradient.last.withValues(alpha: 0.35),
+                        blurRadius: 8,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: Icon(icon, size: 16, color: Colors.white),
+                ),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Text(
+                    label,
+                    style: AppTextStyles.body().copyWith(fontWeight: FontWeight.w500),
+                  ),
+                ),
+                if (value != null) ...[
+                  Text(value!, style: AppTextStyles.secondary()),
+                  const SizedBox(width: AppSpacing.xs),
+                ],
+                const Icon(AppIcons.chevronRight, size: 14, color: AppColors.textSecondary),
+              ],
+            ),
+          ),
         ),
       ),
     );
