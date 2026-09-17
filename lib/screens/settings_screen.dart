@@ -17,8 +17,6 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  String _theme = 'लाइट';
-
   Future<void> _pickOption(String title, List<String> options, String current,
       ValueChanged<String> onPicked) async {
     final picked = await showModalBottomSheet<String>(
@@ -153,18 +151,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 );
               },
-            ),
-            _SettingsTile(
-              icon: AppIcons.theme,
-              gradient: const [Color(0xFF8C7C6C), AppColors.textSecondary],
-              label: 'थीम',
-              value: _theme,
-              onTap: () => _pickOption(
-                'थीम चुनें',
-                ['लाइट', 'डार्क', 'सिस्टम'],
-                _theme,
-                (v) => setState(() => _theme = v),
-              ),
             ),
             const SizedBox(height: AppSpacing.lg),
             const _SectionLabel('सहायता'),
