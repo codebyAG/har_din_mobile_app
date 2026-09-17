@@ -303,8 +303,9 @@ class _HomeContent extends StatelessWidget {
   }
 }
 
-/// The voice "अपना फ्री कस्टम डिज़ाइन बनाएं" entry point (1 free/day —
-/// see [VoiceCustomDesignScreen] and [CustomDesignQuotaController]).
+/// Entry point for [CustomDesignSheet] — a bottom sheet, not a new
+/// screen, so this is one tap there and one swipe back (1 free/day, see
+/// [CustomDesignQuotaController]).
 class _CustomDesignBanner extends StatelessWidget {
   const _CustomDesignBanner();
 
@@ -312,15 +313,13 @@ class _CustomDesignBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     final quota = context.watch<CustomDesignQuotaController>();
     final subtitle = quota.canUseToday
-        ? 'आज ${quota.remainingToday} फ्री डिज़ाइन बचा है — बोलकर बनाएं'
+        ? 'आज ${quota.remainingToday} फ्री डिज़ाइन बचा है'
         : 'आज का फ्री डिज़ाइन इस्तेमाल हो चुका है';
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
       child: GestureDetector(
-        onTap: () => Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => const VoiceCustomDesignScreen()),
-        ),
+        onTap: () => CustomDesignSheet.show(context),
         child: Container(
           padding: const EdgeInsets.all(AppSpacing.md),
           decoration: BoxDecoration(
@@ -356,7 +355,7 @@ class _CustomDesignBanner extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'अपना फ्री कस्टम डिज़ाइन बनाएं',
+                      'बोलकर या लिखकर डिज़ाइन खोजें',
                       style: AppTextStyles.cardTitle(color: Colors.white),
                     ),
                     const SizedBox(height: 2),

@@ -15,35 +15,57 @@ import '../theme/app_text_styles.dart';
 import '../widgets/status_grid_card.dart';
 import 'preview_share_screen.dart';
 
-/// The voice "अपना फ्री कस्टम डिज़ाइन बनाएं" flow: user speaks an
-/// occasion/message, on-device speech recognition transcribes it, and
-/// the transcript is matched against the already-downloaded payload's
-/// `tags[]` (§9 — there is no search endpoint, this is the same
-/// mechanism as the on-screen search box, just fed by voice).
-///
-/// There is no design-generation backend in v1 — "custom design" here
-/// means finding and handing over a real matching design from the
-/// catalogue, counted against the daily free quota when the user
-/// actually picks one.
-class VoiceCustomDesignScreen extends StatefulWidget {
-  const VoiceCustomDesignScreen({super.key});
+const _suggestions = [
+  'जन्मदिन',
+  'शादी की सालगिरह',
+  'गुड मॉर्निंग',
+  'गुड नाइट',
+  'दिवाली',
+  'नई नौकरी',
+];
 
-  @override
-  State<VoiceCustomDesignScreen> createState() => _VoiceCustomDesignScreenState();
+/// "बोलकर या लिखकर डिज़ाइन खोजें" — opens as a bottom sheet, not a new
+/// screen, so it's one tap to get to and one swipe to leave. Voice is
+/// one option beside typing, never a requirement (§ same on-device
+/// search the search box uses — no search endpoint, no AI backend).
+///
+/// There is no design-generation backend in v1 — "custom design" means
+/// finding and handing over a real matching design from the catalogue,
+/// counted against the daily free quota only when the user actually
+/// picks one. A single clear match skips the grid entirely and opens
+/// Preview & Share directly — picking between near-identical options is
+/// friction the flow doesn't need to keep.
+class CustomDesignSheet {
+  CustomDesignSheet._();
+
+  static void show(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => const _CustomDesignSheetContent(),
+    );
+  }
 }
 
-class _VoiceCustomDesignScreenState extends State<VoiceCustomDesignScreen>
+class _CustomDesignSheetContent extends StatefulWidget {
+  const _CustomDesignSheetContent();
+
+  @override
+  State<_CustomDesignSheetContent> createState() => _CustomDesignSheetContentState();
+}
+
+class _CustomDesignSheetContentState extends State<_CustomDesignSheetContent>
     with SingleTickerProviderStateMixin {
   final SpeechToText _speech = SpeechToText();
+  final TextEditingController _controller = TextEditingController();
   late final AnimationController _pulseController;
 
   bool _speechReady = false;
-  bool _speechUnavailable = false;
+  bool _micAvailable = true;
   bool _listening = false;
-  String _transcript = '';
   List<Design> _results = const [];
   bool _searched = false;
-  String? _error;
 
   @override
   void initState() {
@@ -58,6 +80,7 @@ class _VoiceCustomDesignScreenState extends State<VoiceCustomDesignScreen>
   @override
   void dispose() {
     _pulseController.dispose();
+    _controller.dispose();
     _speech.stop();
     super.dispose();
   }
@@ -72,16 +95,13 @@ class _VoiceCustomDesignScreenState extends State<VoiceCustomDesignScreen>
       },
       onError: (_) {
         if (!mounted) return;
-        setState(() {
-          _listening = false;
-          _error = 'सुनने में दिक्कत हुई, दोबारा कोशिश करें';
-        });
+        setState(() => _listening = false);
       },
     );
     if (!mounted) return;
     setState(() {
       _speechReady = ok;
-      _speechUnavailable = !ok;
+      _micAvailable = ok;
     });
   }
 
@@ -91,9 +111,10 @@ class _VoiceCustomDesignScreenState extends State<VoiceCustomDesignScreen>
         _ => 'en_US',
       };
 
-  Future<void> _toggleListening() async {
+  Future<void> _toggleMic() async {
     if (_listening) {
       await _speech.stop();
+      if (!mounted) return;
       setState(() => _listening = false);
       return;
     }
@@ -101,27 +122,29 @@ class _VoiceCustomDesignScreenState extends State<VoiceCustomDesignScreen>
       await _initSpeech();
       if (!mounted || !_speechReady) return;
     }
-    setState(() {
-      _error = null;
-      _transcript = '';
-      _results = const [];
-      _searched = false;
-      _listening = true;
-    });
     final langCode = context.read<AppLanguageController>().code;
+    setState(() => _listening = true);
     await _speech.listen(
       onResult: (result) {
         if (!mounted) return;
-        setState(() => _transcript = result.recognizedWords);
+        _controller.text = result.recognizedWords;
+        _controller.selection = TextSelection.collapsed(offset: _controller.text.length);
         if (result.finalResult) _runSearch();
       },
       listenOptions: SpeechListenOptions(localeId: _localeIdFor(langCode)),
     );
   }
 
+  void _useSuggestion(String term) {
+    _controller.text = term;
+    _controller.selection = TextSelection.collapsed(offset: term.length);
+    _runSearch();
+  }
+
   void _runSearch() {
-    final query = _transcript.trim();
+    final query = _controller.text.trim();
     if (query.isEmpty) return;
+    FocusScope.of(context).unfocus();
     final payload = context.read<ContentViewModel>().payload;
     final matches = payload == null
         ? const <Design>[]
@@ -130,6 +153,12 @@ class _VoiceCustomDesignScreenState extends State<VoiceCustomDesignScreen>
       _results = matches.take(12).toList();
       _searched = true;
     });
+    // One clear match — skip the grid, go straight to it. Choosing
+    // between near-identical results is friction this flow shouldn't
+    // ask for; a grid only earns its place when there's a real choice.
+    if (_results.length == 1) {
+      _pickResult(_results.first);
+    }
   }
 
   Future<void> _pickResult(Design design) async {
@@ -152,128 +181,94 @@ class _VoiceCustomDesignScreenState extends State<VoiceCustomDesignScreen>
   @override
   Widget build(BuildContext context) {
     final quota = context.watch<CustomDesignQuotaController>();
+    final viewInsets = MediaQuery.of(context).viewInsets.bottom;
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text('कस्टम डिज़ाइन'),
-        backgroundColor: AppColors.background,
-        surfaceTintColor: AppColors.background,
-        elevation: 0,
-      ),
-      body: SafeArea(
-        top: false,
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.screenPadding,
-                AppSpacing.sm,
-                AppSpacing.screenPadding,
-                0,
-              ),
-              child: _QuotaBanner(quota: quota),
-            ),
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(vertical: AppSpacing.xl),
-                child: Column(
-                  children: [
-                    Text(
-                      'बोलिए किस मौके के लिए डिज़ाइन चाहिए',
-                      textAlign: TextAlign.center,
-                      style: AppTextStyles.cardTitle(),
-                    ),
-                    const SizedBox(height: AppSpacing.xs),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
-                      child: Text(
-                        'जैसे "मेरी बेटी का जन्मदिन" या "दिवाली की शुभकामनाएं"',
-                        textAlign: TextAlign.center,
-                        style: AppTextStyles.secondary(),
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.xxl),
-                    _MicButton(
-                      listening: _listening,
-                      pulseController: _pulseController,
-                      onTap: _toggleListening,
-                    ),
-                    const SizedBox(height: AppSpacing.lg),
-                    if (_speechUnavailable)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
-                        child: Text(
-                          'इस डिवाइस पर वॉइस इनपुट उपलब्ध नहीं है, या माइक्रोफ़ोन की अनुमति नहीं मिली।',
-                          textAlign: TextAlign.center,
-                          style: AppTextStyles.secondary(color: AppColors.like),
-                        ),
-                      )
-                    else if (_error != null)
-                      Text(_error!, style: AppTextStyles.secondary(color: AppColors.like))
-                    else if (_transcript.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: AppSpacing.md,
-                            vertical: AppSpacing.sm,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.lightAccent,
-                            borderRadius: BorderRadius.circular(100),
-                          ),
-                          child: Text(
-                            '"$_transcript"',
-                            textAlign: TextAlign.center,
-                            style: AppTextStyles.body().copyWith(fontStyle: FontStyle.italic),
-                          ),
-                        ),
-                      ),
-                    if (_searched) ...[
-                      const SizedBox(height: AppSpacing.xl),
-                      _searched && _results.isEmpty
-                          ? Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: AppSpacing.xxl,
-                              ),
-                              child: Text(
-                                'कोई मैच नहीं मिला — दोबारा बोलकर कोशिश करें',
-                                textAlign: TextAlign.center,
-                                style: AppTextStyles.secondary(),
-                              ),
-                            )
-                          : Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: AppSpacing.screenPadding,
-                              ),
-                              child: GridView.builder(
-                                shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
-                                itemCount: _results.length,
-                                gridDelegate:
-                                    const SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: 2,
-                                  mainAxisSpacing: AppSpacing.cardGap,
-                                  crossAxisSpacing: AppSpacing.cardGap,
-                                  childAspectRatio: 0.8,
-                                ),
-                                itemBuilder: (context, i) {
-                                  final design = _results[i];
-                                  return StatusGridCard(
-                                    status: DesignMapper.toStatusItem(design),
-                                    width: double.infinity,
-                                    onUse: () => _pickResult(design),
-                                  );
-                                },
-                              ),
-                            ),
-                    ],
-                  ],
+    return AnimatedPadding(
+      duration: const Duration(milliseconds: 150),
+      padding: EdgeInsets.only(bottom: viewInsets),
+      child: Container(
+        constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.85),
+        decoration: const BoxDecoration(
+          color: AppColors.background,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.screenPadding,
+            AppSpacing.sm,
+            AppSpacing.screenPadding,
+            AppSpacing.xxl,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 36,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: AppSpacing.md),
+                  decoration: BoxDecoration(
+                    color: AppColors.border,
+                    borderRadius: BorderRadius.circular(100),
+                  ),
                 ),
               ),
-            ),
-          ],
+              _QuotaBanner(quota: quota),
+              const SizedBox(height: AppSpacing.lg),
+              Text('बोलकर या लिखकर डिज़ाइन खोजें', style: AppTextStyles.cardTitle()),
+              const SizedBox(height: AppSpacing.xs),
+              Text('जैसे "मेरी बेटी का जन्मदिन", या नीचे से चुन लें', style: AppTextStyles.secondary()),
+              const SizedBox(height: AppSpacing.md),
+              _SearchField(
+                controller: _controller,
+                listening: _listening,
+                pulseController: _pulseController,
+                micAvailable: _micAvailable,
+                onSubmit: _runSearch,
+                onMicTap: _toggleMic,
+              ),
+              const SizedBox(height: AppSpacing.md),
+              Wrap(
+                spacing: AppSpacing.sm,
+                runSpacing: AppSpacing.sm,
+                children: [
+                  for (final term in _suggestions)
+                    _SuggestionChip(label: term, onTap: () => _useSuggestion(term)),
+                ],
+              ),
+              if (_searched && _results.length > 1) ...[
+                const SizedBox(height: AppSpacing.xl),
+                GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: _results.length,
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    mainAxisSpacing: AppSpacing.cardGap,
+                    crossAxisSpacing: AppSpacing.cardGap,
+                    childAspectRatio: 0.8,
+                  ),
+                  itemBuilder: (context, i) {
+                    final design = _results[i];
+                    return StatusGridCard(
+                      status: DesignMapper.toStatusItem(design),
+                      width: double.infinity,
+                      onUse: () => _pickResult(design),
+                    );
+                  },
+                ),
+              ] else if (_searched && _results.isEmpty) ...[
+                const SizedBox(height: AppSpacing.xl),
+                Center(
+                  child: Text(
+                    'कोई मैच नहीं मिला — ऊपर दिए विकल्पों में से चुनें',
+                    textAlign: TextAlign.center,
+                    style: AppTextStyles.secondary(),
+                  ),
+                ),
+              ],
+            ],
+          ),
         ),
       ),
     );
@@ -334,71 +329,144 @@ class _QuotaBanner extends StatelessWidget {
   }
 }
 
-class _MicButton extends StatelessWidget {
+/// One unified entry point — type, or tap the mic to dictate into the
+/// same field. Voice is an option beside typing, never a requirement.
+class _SearchField extends StatelessWidget {
+  final TextEditingController controller;
   final bool listening;
+  final bool micAvailable;
   final AnimationController pulseController;
+  final VoidCallback onSubmit;
+  final VoidCallback onMicTap;
+
+  const _SearchField({
+    required this.controller,
+    required this.listening,
+    required this.micAvailable,
+    required this.pulseController,
+    required this.onSubmit,
+    required this.onMicTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.card,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.textPrimary.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: TextField(
+              controller: controller,
+              textInputAction: TextInputAction.search,
+              onSubmitted: (_) => onSubmit(),
+              style: AppTextStyles.body(),
+              decoration: const InputDecoration(
+                border: InputBorder.none,
+                hintText: 'जैसे "मेरी बेटी का जन्मदिन"',
+              ),
+            ),
+          ),
+          if (micAvailable)
+            AnimatedBuilder(
+              animation: pulseController,
+              builder: (context, child) {
+                final t = pulseController.value;
+                return Padding(
+                  padding: const EdgeInsets.all(6),
+                  child: GestureDetector(
+                    onTap: onMicTap,
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        if (listening)
+                          Opacity(
+                            opacity: (1 - t) * 0.5,
+                            child: Container(
+                              width: 32 + t * 16,
+                              height: 32 + t * 16,
+                              decoration: const BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: AppColors.primary,
+                              ),
+                            ),
+                          ),
+                        Container(
+                          width: 38,
+                          height: 38,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [AppColors.secondary, AppColors.primary],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            listening ? AppIcons.waveform : AppIcons.microphoneSolid,
+                            size: 15,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            )
+          else
+            GestureDetector(
+              onTap: onSubmit,
+              child: Container(
+                margin: const EdgeInsets.all(6),
+                width: 38,
+                height: 38,
+                alignment: Alignment.center,
+                decoration: const BoxDecoration(
+                  color: AppColors.lightAccent,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(AppIcons.search, size: 15, color: AppColors.primary),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SuggestionChip extends StatelessWidget {
+  final String label;
   final VoidCallback onTap;
 
-  const _MicButton({
-    required this.listening,
-    required this.pulseController,
-    required this.onTap,
-  });
+  const _SuggestionChip({required this.label, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: SizedBox(
-        width: 140,
-        height: 140,
-        child: AnimatedBuilder(
-          animation: pulseController,
-          builder: (context, child) {
-            final t = pulseController.value;
-            return Stack(
-              alignment: Alignment.center,
-              children: [
-                if (listening)
-                  Opacity(
-                    opacity: (1 - t) * 0.5,
-                    child: Container(
-                      width: 90 + t * 50,
-                      height: 90 + t * 50,
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                  ),
-                Container(
-                  width: 88,
-                  height: 88,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [AppColors.secondary, AppColors.primary],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.primary.withValues(alpha: 0.4),
-                        blurRadius: 20,
-                        offset: const Offset(0, 8),
-                      ),
-                    ],
-                  ),
-                  child: Icon(
-                    listening ? AppIcons.waveform : AppIcons.microphoneSolid,
-                    size: 32,
-                    color: Colors.white,
-                  ),
-                ),
-              ],
-            );
-          },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+        decoration: BoxDecoration(
+          color: AppColors.lightAccent,
+          borderRadius: BorderRadius.circular(100),
+        ),
+        child: Text(
+          label,
+          style: AppTextStyles.secondary(color: AppColors.primaryDark)
+              .copyWith(fontWeight: FontWeight.w600),
         ),
       ),
     );

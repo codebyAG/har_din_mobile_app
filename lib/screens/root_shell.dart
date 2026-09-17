@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../core/services/app_update_service.dart';
 import '../core/services/event_queue.dart';
 import '../presentation/providers/app_language_controller.dart';
 import '../presentation/providers/content_view_model.dart';
@@ -68,6 +69,8 @@ class _RootShellState extends State<RootShell> {
       // "Next app open" flush trigger (§8, APP-CHANGES-01 §4) — whatever
       // the last session left queued goes out now, not just at 20 events.
       EventQueue.instance.flush();
+      // Once per app open, same as the rest above — never blocks the UI.
+      AppUpdateService.checkAndPrompt(context);
     });
   }
 
