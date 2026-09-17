@@ -99,7 +99,7 @@ class _VoiceCustomDesignScreenState extends State<VoiceCustomDesignScreen>
     }
     if (!_speechReady) {
       await _initSpeech();
-      if (!_speechReady) return;
+      if (!mounted || !_speechReady) return;
     }
     setState(() {
       _error = null;
@@ -110,12 +110,12 @@ class _VoiceCustomDesignScreenState extends State<VoiceCustomDesignScreen>
     });
     final langCode = context.read<AppLanguageController>().code;
     await _speech.listen(
-      localeId: _localeIdFor(langCode),
       onResult: (result) {
         if (!mounted) return;
         setState(() => _transcript = result.recognizedWords);
         if (result.finalResult) _runSearch();
       },
+      listenOptions: SpeechListenOptions(localeId: _localeIdFor(langCode)),
     );
   }
 
