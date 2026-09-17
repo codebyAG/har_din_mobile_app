@@ -7,6 +7,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
 import 'gradient_tile.dart';
+import 'shimmer_box.dart';
 
 /// Category card for the home grid — one solid pastel tile holding the
 /// category's icon (network `icon_url`, falling back to a gradient +
@@ -53,6 +54,7 @@ class CategoryGridTile extends StatelessWidget {
                               cacheManager: ImageCacheService.instance,
                               fit: BoxFit.contain,
                               memCacheWidth: 160,
+                              placeholder: (context, url) => const ShimmerPlaceholder(),
                               errorWidget: (context, url, error) => GradientTile(
                                 colors: category.gradient,
                                 icon: category.icon,

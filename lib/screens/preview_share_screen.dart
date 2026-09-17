@@ -15,6 +15,7 @@ import '../theme/app_icons.dart';
 import '../theme/app_spacing.dart';
 import '../widgets/gradient_tile.dart';
 import '../widgets/secondary_button.dart';
+import '../widgets/shimmer_box.dart';
 import '../widgets/whatsapp_button.dart';
 
 /// §2 — the share path v1 measures. The real `display_url` file, shared
@@ -116,6 +117,7 @@ class _PreviewShareScreenState extends State<PreviewShareScreen> {
                     fit: BoxFit.cover,
                     width: double.infinity,
                     height: double.infinity,
+                    placeholder: (context, url) => const ShimmerPlaceholder(),
                     errorWidget: (context, url, error) => const GradientTile(
                       colors: [AppColors.primary, AppColors.primaryDark],
                       icon: AppIcons.celebration,

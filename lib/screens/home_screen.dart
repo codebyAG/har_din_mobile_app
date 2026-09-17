@@ -663,6 +663,7 @@ class _TimeBandSection extends StatelessWidget {
                           cacheManager: ImageCacheService.instance,
                           fit: BoxFit.cover,
                           memCacheWidth: 220,
+                          placeholder: (context, url) => const ShimmerPlaceholder(),
                           errorWidget: (context, url, error) => GradientTile(
                             colors: style.gradient,
                             icon: style.icon,

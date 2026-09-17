@@ -54,19 +54,36 @@ class AppShimmer extends StatelessWidget {
   }
 }
 
-/// Shows [skeleton] for a short beat, then crossfades into [child] — used
-/// on every screen so first paint always feels intentional rather than
-/// content just popping in.
+/// Drop-in `placeholder:` for any `CachedNetworkImage` — fills whatever
+/// box the image is given (explicit width/height, `Expanded`,
+/// `Positioned.fill`, ...) with the shimmer sweep instead of a blank gap
+/// while the real image downloads.
+class ShimmerPlaceholder extends StatelessWidget {
+  const ShimmerPlaceholder({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const AppShimmer(child: ColoredBox(color: Colors.white));
+  }
+}
+
+/// Shows [skeleton] until the content is actually ready, then crossfades
+/// into [child]. Pass [loading] wherever a real loading flag exists
+/// (`ContentViewModel.isLoading`, etc.) so the shimmer reflects real data
+/// loading rather than a guess; omit it and this falls back to a short
+/// fixed beat, for screens with no real loading signal of their own.
 class ShimmerReveal extends StatefulWidget {
   final Widget skeleton;
   final Widget child;
   final Duration delay;
+  final bool? loading;
 
   const ShimmerReveal({
     super.key,
     required this.skeleton,
     required this.child,
     this.delay = const Duration(milliseconds: 650),
+    this.loading,
   });
 
   @override
@@ -74,21 +91,24 @@ class ShimmerReveal extends StatefulWidget {
 }
 
 class _ShimmerRevealState extends State<ShimmerReveal> {
-  bool _ready = false;
+  bool _timerReady = false;
 
   @override
   void initState() {
     super.initState();
-    Future.delayed(widget.delay, () {
-      if (mounted) setState(() => _ready = true);
-    });
+    if (widget.loading == null) {
+      Future.delayed(widget.delay, () {
+        if (mounted) setState(() => _timerReady = true);
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final ready = widget.loading != null ? !widget.loading! : _timerReady;
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 350),
-      child: _ready
+      child: ready
           ? KeyedSubtree(key: const ValueKey('content'), child: widget.child)
           : KeyedSubtree(
               key: const ValueKey('skeleton'),

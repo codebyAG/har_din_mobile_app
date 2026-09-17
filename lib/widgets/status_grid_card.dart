@@ -8,6 +8,7 @@ import '../theme/app_icons.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
 import 'gradient_tile.dart';
+import 'shimmer_box.dart';
 
 class StatusGridCard extends StatelessWidget {
   final StatusItem status;
@@ -57,6 +58,7 @@ class StatusGridCard extends StatelessWidget {
                     // Grid tile, not the full display image — decode at
                     // roughly the cell's pixel width, not the source size.
                     memCacheWidth: 320,
+                    placeholder: (context, url) => const ShimmerPlaceholder(),
                     errorWidget: (context, url, error) => GradientTile(
                       colors: status.gradient,
                       icon: status.icon,

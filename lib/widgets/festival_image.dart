@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../core/services/image_cache_service.dart';
 import '../models/festival.dart';
 import 'gradient_tile.dart';
+import 'shimmer_box.dart';
 
 /// Renders an occasion's real photo (`image_url`) when available,
 /// falling back to the gradient + icon placeholder tile otherwise.
@@ -39,6 +40,7 @@ class FestivalImage extends StatelessWidget {
         fit: BoxFit.cover,
         width: double.infinity,
         height: double.infinity,
+        placeholder: (context, url) => const ShimmerPlaceholder(),
         errorWidget: (context, url, error) => _fallback(),
       ),
     );

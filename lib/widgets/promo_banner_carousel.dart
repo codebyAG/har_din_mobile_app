@@ -7,6 +7,7 @@ import '../core/services/image_cache_service.dart';
 import '../models/promo_banner.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
+import 'shimmer_box.dart';
 
 class PromoBannerCarousel extends StatefulWidget {
   final List<PromoBanner> banners;
@@ -110,6 +111,7 @@ class _PromoBannerCarouselState extends State<PromoBannerCarousel> {
                             width: cardWidth - 5,
                             height: cardHeight - 5,
                             fit: BoxFit.cover,
+                            placeholder: (context, url) => const ShimmerPlaceholder(),
                           ),
                         ),
                       ),

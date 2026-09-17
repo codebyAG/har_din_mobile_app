@@ -10,6 +10,7 @@ import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
 import '../widgets/festive_glow.dart';
 import '../widgets/gradient_tile.dart';
+import '../widgets/shimmer_box.dart';
 import 'preview_share_screen.dart';
 
 /// My Creations — designs the user downloaded or favorited, read from
@@ -283,6 +284,7 @@ class _CreationCard extends StatelessWidget {
                   imageUrl: record.thumbnailUrl,
                   cacheManager: ImageCacheService.instance,
                   fit: BoxFit.cover,
+                  placeholder: (context, url) => const ShimmerPlaceholder(),
                   errorWidget: (context, url, error) => const GradientTile(
                     colors: [AppColors.primary, AppColors.primaryDark],
                     icon: AppIcons.celebration,
