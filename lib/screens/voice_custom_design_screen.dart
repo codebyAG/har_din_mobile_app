@@ -24,37 +24,24 @@ const _suggestions = [
   'नई नौकरी',
 ];
 
-/// "बोलकर या लिखकर डिज़ाइन खोजें" — opens as a bottom sheet, not a new
-/// screen, so it's one tap to get to and one swipe to leave. Voice is
-/// one option beside typing, never a requirement (§ same on-device
-/// search the search box uses — no search endpoint, no AI backend).
+/// "बोलकर या लिखकर डिज़ाइन खोजें" — a full page, not a sheet: the results
+/// grid genuinely needs the room. Voice is one option beside typing,
+/// never a requirement (same on-device search the search box uses — no
+/// search endpoint, no AI backend, §9).
 ///
 /// There is no design-generation backend in v1 — "custom design" means
 /// finding and handing over a real matching design from the catalogue,
 /// counted against the daily free quota only when the user actually
 /// picks one. Every match — even a single one — goes into the results
 /// grid rather than auto-opening; the pick is always the user's call.
-class CustomDesignSheet {
-  CustomDesignSheet._();
-
-  static void show(BuildContext context) {
-    showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => const _CustomDesignSheetContent(),
-    );
-  }
-}
-
-class _CustomDesignSheetContent extends StatefulWidget {
-  const _CustomDesignSheetContent();
+class CustomDesignScreen extends StatefulWidget {
+  const CustomDesignScreen({super.key});
 
   @override
-  State<_CustomDesignSheetContent> createState() => _CustomDesignSheetContentState();
+  State<CustomDesignScreen> createState() => _CustomDesignScreenState();
 }
 
-class _CustomDesignSheetContentState extends State<_CustomDesignSheetContent>
+class _CustomDesignScreenState extends State<CustomDesignScreen>
     with SingleTickerProviderStateMixin {
   final SpeechToText _speech = SpeechToText();
   final TextEditingController _controller = TextEditingController();
@@ -174,17 +161,17 @@ class _CustomDesignSheetContentState extends State<_CustomDesignSheetContent>
   @override
   Widget build(BuildContext context) {
     final quota = context.watch<CustomDesignQuotaController>();
-    final viewInsets = MediaQuery.of(context).viewInsets.bottom;
 
-    return AnimatedPadding(
-      duration: const Duration(milliseconds: 150),
-      padding: EdgeInsets.only(bottom: viewInsets),
-      child: Container(
-        constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.85),
-        decoration: const BoxDecoration(
-          color: AppColors.background,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        ),
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        title: const Text('कस्टम डिज़ाइन'),
+        backgroundColor: AppColors.background,
+        surfaceTintColor: AppColors.background,
+        elevation: 0,
+      ),
+      body: SafeArea(
+        top: false,
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(
             AppSpacing.screenPadding,
@@ -195,17 +182,6 @@ class _CustomDesignSheetContentState extends State<_CustomDesignSheetContent>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Center(
-                child: Container(
-                  width: 36,
-                  height: 4,
-                  margin: const EdgeInsets.only(bottom: AppSpacing.md),
-                  decoration: BoxDecoration(
-                    color: AppColors.border,
-                    borderRadius: BorderRadius.circular(100),
-                  ),
-                ),
-              ),
               _QuotaBanner(quota: quota),
               const SizedBox(height: AppSpacing.lg),
               Text('बोलकर या लिखकर डिज़ाइन खोजें', style: AppTextStyles.cardTitle()),
@@ -365,8 +341,17 @@ class _SearchField extends StatelessWidget {
               textInputAction: TextInputAction.search,
               onSubmitted: (_) => onSubmit(),
               style: AppTextStyles.body(),
+              // The app-wide input theme fills the field and draws its
+              // own enabled/focused borders — those have to be switched
+              // off explicitly too, not just the top-level `border`, or
+              // this Container's own rounded border shows up doubled.
               decoration: const InputDecoration(
+                isCollapsed: true,
+                filled: false,
                 border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                contentPadding: EdgeInsets.symmetric(vertical: 14),
                 hintText: 'जैसे "मेरी बेटी का जन्मदिन"',
               ),
             ),

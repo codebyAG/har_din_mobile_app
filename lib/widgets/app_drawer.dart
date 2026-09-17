@@ -7,6 +7,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_icons.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
+import '../screens/quote_maker_screen.dart';
 import '../screens/settings_screen.dart';
 import 'festive_glow.dart';
 
@@ -70,6 +71,12 @@ class AppDrawer extends StatelessWidget {
                   gradient: const [Color(0xFF6FA8E8), Color(0xFF3D6FC2)],
                   label: t('nav.profile'),
                   onTap: () => _goToTab(context, 3),
+                ),
+                _DrawerTile(
+                  icon: AppIcons.edit,
+                  gradient: const [Color(0xFFB09B8C), Color(0xFF6E6153)],
+                  label: 'टेक्स्ट स्टेटस बनाएं',
+                  onTap: () => _push(context, const QuoteMakerScreen()),
                 ),
                 // Feed is unreachable in v1 — no posts, no comments, no users (§5).
                 const SizedBox(height: AppSpacing.lg),

@@ -303,8 +303,7 @@ class _HomeContent extends StatelessWidget {
   }
 }
 
-/// Entry point for [CustomDesignSheet] — a bottom sheet, not a new
-/// screen, so this is one tap there and one swipe back (1 free/day, see
+/// Entry point for [CustomDesignScreen] (1 free/day, see
 /// [CustomDesignQuotaController]).
 class _CustomDesignBanner extends StatelessWidget {
   const _CustomDesignBanner();
@@ -319,7 +318,9 @@ class _CustomDesignBanner extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
       child: GestureDetector(
-        onTap: () => CustomDesignSheet.show(context),
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const CustomDesignScreen()),
+        ),
         child: Container(
           padding: const EdgeInsets.all(AppSpacing.md),
           decoration: BoxDecoration(

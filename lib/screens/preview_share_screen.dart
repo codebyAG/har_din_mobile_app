@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -39,6 +41,29 @@ class _PreviewShareScreenState extends State<PreviewShareScreen> {
   void initState() {
     super.initState();
     EventQueue.instance.record(HarDinEventType.designView, designId: widget.design.id);
+  }
+
+  /// The WhatsApp button's actual action — on Android, hands the file
+  /// straight to WhatsApp (skipping the OS "choose an app" sheet)
+  /// instead of the generic share sheet the label doesn't promise.
+  /// Falls back to the normal share sheet if that's not possible (iOS,
+  /// WhatsApp not installed, or the OS refuses the intent).
+  Future<void> _shareToWhatsApp() async {
+    if (_busy) return;
+    setState(() => _busy = true);
+    try {
+      if (Platform.isAndroid) {
+        final file = await ImageCacheService.instance.getSingleFile(widget.design.displayUrl);
+        final ok = await ShareService.shareToWhatsAppDirect(file, eventId: widget.design.id);
+        if (ok) {
+          _snack('WhatsApp पर भेजा गया');
+          return;
+        }
+      }
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+    await _share();
   }
 
   Future<void> _share() async {
@@ -100,7 +125,7 @@ class _PreviewShareScreenState extends State<PreviewShareScreen> {
                 ),
               ),
               const SizedBox(height: AppSpacing.sectionGap),
-              WhatsAppButton(onPressed: _busy ? null : _share),
+              WhatsAppButton(onPressed: _busy ? null : _shareToWhatsApp),
               const SizedBox(height: AppSpacing.sm),
               Row(
                 children: [

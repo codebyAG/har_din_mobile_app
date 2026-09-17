@@ -189,4 +189,20 @@ class LocalStore {
     await prefs.setString(_kCustomDesignDate, today);
     await prefs.setInt(_kCustomDesignCount, current + 1);
   }
+
+  // --- In-app review prompt — local only, asked at most once ---
+
+  static const _kShareCount = 'har_din.share_count';
+  static const _kReviewPrompted = 'har_din.review_prompted';
+
+  Future<int> incrementShareCount() async {
+    final prefs = await _prefs;
+    final next = (prefs.getInt(_kShareCount) ?? 0) + 1;
+    await prefs.setInt(_kShareCount, next);
+    return next;
+  }
+
+  Future<bool> hasPromptedReview() async => (await _prefs).getBool(_kReviewPrompted) ?? false;
+
+  Future<void> setPromptedReview() async => (await _prefs).setBool(_kReviewPrompted, true);
 }
