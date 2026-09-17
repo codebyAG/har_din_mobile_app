@@ -3,6 +3,10 @@
          calls api-hardin.vocadose.com at runtime, so a release APK
          without this permission silently fails every network request. -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Voice custom-design search (speech_to_text) — mic capture only,
+         recognition itself runs through the OS, nothing is recorded to
+         disk or sent anywhere by this app. -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
     <application
         android:label="हर दिन"
         android:name="${applicationName}"

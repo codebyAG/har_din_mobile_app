@@ -11,6 +11,7 @@ import '../models/home_category.dart';
 import '../models/promo_banner.dart';
 import '../presentation/providers/app_language_controller.dart';
 import '../presentation/providers/content_view_model.dart';
+import '../presentation/providers/custom_design_quota_controller.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_icons.dart';
 import '../theme/app_spacing.dart';
@@ -24,6 +25,7 @@ import '../widgets/shimmer_box.dart';
 import 'category_detail_screen.dart';
 import 'preview_share_screen.dart';
 import 'status_gallery_screen.dart';
+import 'voice_custom_design_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -235,13 +237,17 @@ class _HomeContent extends StatelessWidget {
               ),
             ),
           ),
+        SliverPadding(
+          padding: EdgeInsets.only(top: banners.isEmpty ? AppSpacing.lg : AppSpacing.sm),
+          sliver: const SliverToBoxAdapter(child: _CustomDesignBanner()),
+        ),
+        SliverToBoxAdapter(
+          child: _TimeBandSection(payload: payload),
+        ),
         if (payload.occasions.isNotEmpty)
           SliverToBoxAdapter(
             child: _OccasionsSection(occasions: payload.occasions),
           ),
-        SliverToBoxAdapter(
-          child: _TimeBandSection(payload: payload),
-        ),
         const SliverPadding(
           padding: EdgeInsets.symmetric(vertical: AppSpacing.lg),
           sliver: SliverToBoxAdapter(
@@ -297,6 +303,89 @@ class _HomeContent extends StatelessWidget {
   }
 }
 
+/// The voice "अपना फ्री कस्टम डिज़ाइन बनाएं" entry point (1 free/day —
+/// see [VoiceCustomDesignScreen] and [CustomDesignQuotaController]).
+class _CustomDesignBanner extends StatelessWidget {
+  const _CustomDesignBanner();
+
+  @override
+  Widget build(BuildContext context) {
+    final quota = context.watch<CustomDesignQuotaController>();
+    final subtitle = quota.canUseToday
+        ? 'आज ${quota.remainingToday} फ्री डिज़ाइन बचा है — बोलकर बनाएं'
+        : 'आज का फ्री डिज़ाइन इस्तेमाल हो चुका है';
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
+      child: GestureDetector(
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const VoiceCustomDesignScreen()),
+        ),
+        child: Container(
+          padding: const EdgeInsets.all(AppSpacing.md),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [AppColors.secondary, AppColors.primary, AppColors.primaryDark],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primary.withValues(alpha: 0.35),
+                blurRadius: 18,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 46,
+                height: 46,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.22),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(AppIcons.microphoneSolid, size: 20, color: Colors.white),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'अपना फ्री कस्टम डिज़ाइन बनाएं',
+                      style: AppTextStyles.cardTitle(color: Colors.white),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: AppTextStyles.secondary(color: Colors.white.withValues(alpha: 0.9)),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Container(
+                width: 30,
+                height: 30,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.22),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(AppIcons.chevronRight, size: 13, color: Colors.white),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _OccasionsSection extends StatelessWidget {
   final List<Occasion> occasions;
 
@@ -326,7 +415,7 @@ class _OccasionsSection extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.sm),
           SizedBox(
-            height: 176,
+            height: 128,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
@@ -345,9 +434,9 @@ class _OccasionsSection extends StatelessWidget {
                     ),
                   ),
                   child: Container(
-                    width: 130,
+                    width: 96,
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(16),
                       gradient: LinearGradient(
                         colors: festival.gradient,
                         begin: Alignment.topLeft,
@@ -366,11 +455,11 @@ class _OccasionsSection extends StatelessWidget {
                       fit: StackFit.expand,
                       children: [
                         Positioned(
-                          right: -18,
-                          bottom: -18,
+                          right: -14,
+                          bottom: -14,
                           child: Icon(
                             festival.icon,
-                            size: 92,
+                            size: 68,
                             color: Colors.white.withValues(alpha: 0.14),
                           ),
                         ),
@@ -390,10 +479,10 @@ class _OccasionsSection extends StatelessWidget {
                           ),
                         ),
                         Positioned(
-                          top: 8,
-                          left: 8,
+                          top: 6,
+                          left: 6,
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
                                 colors: urgent
@@ -405,7 +494,7 @@ class _OccasionsSection extends StatelessWidget {
                                 BoxShadow(
                                   color: (urgent ? AppColors.like : AppColors.primary)
                                       .withValues(alpha: 0.4),
-                                  blurRadius: 6,
+                                  blurRadius: 5,
                                   offset: const Offset(0, 2),
                                 ),
                               ],
@@ -413,23 +502,23 @@ class _OccasionsSection extends StatelessWidget {
                             child: Text(
                               days == 0 ? t('festival.today') : t('festival.days_left', {'n': '$days'}),
                               style: AppTextStyles.secondary(color: Colors.white)
-                                  .copyWith(fontWeight: FontWeight.w700, fontSize: 10.5),
+                                  .copyWith(fontWeight: FontWeight.w700, fontSize: 9),
                             ),
                           ),
                         ),
                         Positioned(
-                          left: AppSpacing.sm,
-                          right: AppSpacing.sm,
-                          bottom: AppSpacing.sm,
+                          left: AppSpacing.xs,
+                          right: AppSpacing.xs,
+                          bottom: AppSpacing.xs,
                           child: Text(
                             occasion.name,
                             maxLines: 2,
                             style: AppTextStyles.cardTitle(color: Colors.white).copyWith(
-                              fontSize: 14,
+                              fontSize: 11.5,
                               shadows: [
                                 Shadow(
                                   color: Colors.black.withValues(alpha: 0.4),
-                                  blurRadius: 6,
+                                  blurRadius: 5,
                                 ),
                               ],
                             ),

@@ -159,4 +159,34 @@ class LocalStore {
     await _writeSavedDesigns(data);
     return !existed;
   }
+
+  // --- Voice custom-design daily quota — local only, resets by date ---
+  // No accounts/payments in v1 (§5), so this is a plain per-device
+  // counter: how many times "अपना कस्टम डिज़ाइन बनाएं" has actually
+  // produced a design today, keyed by today's date so it resets itself
+  // at midnight without any background job.
+
+  static const _kCustomDesignDate = 'har_din.custom_design.date';
+  static const _kCustomDesignCount = 'har_din.custom_design.count';
+
+  String _todayKey(DateTime now) =>
+      '${now.year.toString().padLeft(4, '0')}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+
+  /// Uses actually recorded today (0 if the stored date isn't today).
+  Future<int> getCustomDesignUsesToday() async {
+    final prefs = await _prefs;
+    final storedDate = prefs.getString(_kCustomDesignDate);
+    if (storedDate != _todayKey(DateTime.now())) return 0;
+    return prefs.getInt(_kCustomDesignCount) ?? 0;
+  }
+
+  Future<void> recordCustomDesignUse() async {
+    final prefs = await _prefs;
+    final today = _todayKey(DateTime.now());
+    final current = prefs.getString(_kCustomDesignDate) == today
+        ? (prefs.getInt(_kCustomDesignCount) ?? 0)
+        : 0;
+    await prefs.setString(_kCustomDesignDate, today);
+    await prefs.setInt(_kCustomDesignCount, current + 1);
+  }
 }

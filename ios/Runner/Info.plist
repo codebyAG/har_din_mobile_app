@@ -45,5 +45,9 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>अपने त्योहार या मौके के बारे में बोलकर एक कस्टम डिज़ाइन खोजने के लिए माइक्रोफ़ोन का इस्तेमाल होता है।</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>आपकी आवाज़़ को टेक्स्ट में बदलकर सही डिज़ाइन खोजने के लिए इस्तेमाल होता है।</string>
 </dict>
 </plist>

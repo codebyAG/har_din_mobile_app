@@ -105,4 +105,8 @@ class AppIcons {
   static const IconData people = FontAwesomeIcons.userGroup;
   static const IconData logout = FontAwesomeIcons.rightFromBracket;
   static const IconData report = FontAwesomeIcons.flag;
+  static const IconData microphone = FontAwesomeIcons.microphone;
+  static const IconData microphoneSolid = FontAwesomeIcons.microphone;
+  static const IconData waveform = FontAwesomeIcons.waveSquare;
+  static const IconData sparkle = FontAwesomeIcons.wandMagicSparkles;
 }
