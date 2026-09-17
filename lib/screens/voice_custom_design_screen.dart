@@ -32,9 +32,8 @@ const _suggestions = [
 /// There is no design-generation backend in v1 — "custom design" means
 /// finding and handing over a real matching design from the catalogue,
 /// counted against the daily free quota only when the user actually
-/// picks one. A single clear match skips the grid entirely and opens
-/// Preview & Share directly — picking between near-identical options is
-/// friction the flow doesn't need to keep.
+/// picks one. Every match — even a single one — goes into the results
+/// grid rather than auto-opening; the pick is always the user's call.
 class CustomDesignSheet {
   CustomDesignSheet._();
 
@@ -153,12 +152,6 @@ class _CustomDesignSheetContentState extends State<_CustomDesignSheetContent>
       _results = matches.take(12).toList();
       _searched = true;
     });
-    // One clear match — skip the grid, go straight to it. Choosing
-    // between near-identical results is friction this flow shouldn't
-    // ask for; a grid only earns its place when there's a real choice.
-    if (_results.length == 1) {
-      _pickResult(_results.first);
-    }
   }
 
   Future<void> _pickResult(Design design) async {
@@ -236,7 +229,7 @@ class _CustomDesignSheetContentState extends State<_CustomDesignSheetContent>
                     _SuggestionChip(label: term, onTap: () => _useSuggestion(term)),
                 ],
               ),
-              if (_searched && _results.length > 1) ...[
+              if (_searched && _results.isNotEmpty) ...[
                 const SizedBox(height: AppSpacing.xl),
                 GridView.builder(
                   shrinkWrap: true,
