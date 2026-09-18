@@ -7,6 +7,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
 import '../widgets/primary_button.dart';
+import '../widgets/shimmer_box.dart';
 import 'root_shell.dart';
 
 /// New — required by §5. Shown once, before the language is stored;
@@ -113,30 +114,43 @@ class _LanguageSelectScreenState extends State<LanguageSelectScreen> {
               const SizedBox(height: 2),
               Text('Select your language', style: AppTextStyles.secondary()),
               const SizedBox(height: AppSpacing.xl),
-              if (_bootstrapping)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: AppSpacing.xl),
-                  child: CircularProgressIndicator(color: AppColors.primary),
-                )
-              else
-                Expanded(
-                  child: GridView.builder(
-                    physics: const BouncingScrollPhysics(),
-                    itemCount: _options.length,
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      mainAxisSpacing: AppSpacing.sm,
-                      crossAxisSpacing: AppSpacing.sm,
-                      childAspectRatio: 1.7,
-                    ),
-                    itemBuilder: (context, i) => _LanguageCard(
-                      option: _options[i],
-                      palette: _cardPalette[i % _cardPalette.length],
-                      selected: _options[i].code == _selected,
-                      onTap: () => setState(() => _selected = _options[i].code),
-                    ),
-                  ),
-                ),
+              Expanded(
+                child: _bootstrapping
+                    ? GridView.builder(
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: 8,
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          mainAxisSpacing: AppSpacing.sm,
+                          crossAxisSpacing: AppSpacing.sm,
+                          childAspectRatio: 1.7,
+                        ),
+                        itemBuilder: (context, i) => AppShimmer(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                        ),
+                      )
+                    : GridView.builder(
+                        physics: const BouncingScrollPhysics(),
+                        itemCount: _options.length,
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          mainAxisSpacing: AppSpacing.sm,
+                          crossAxisSpacing: AppSpacing.sm,
+                          childAspectRatio: 1.7,
+                        ),
+                        itemBuilder: (context, i) => _LanguageCard(
+                          option: _options[i],
+                          palette: _cardPalette[i % _cardPalette.length],
+                          selected: _options[i].code == _selected,
+                          onTap: () => setState(() => _selected = _options[i].code),
+                        ),
+                      ),
+              ),
               const SizedBox(height: AppSpacing.lg),
               PrimaryButton(
                 label: _loading ? 'लोड हो रहा है...' : 'आगे बढ़ें',
