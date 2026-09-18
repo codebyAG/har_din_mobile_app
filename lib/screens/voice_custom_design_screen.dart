@@ -24,16 +24,21 @@ const _suggestions = [
   'नई नौकरी',
 ];
 
-/// "बोलकर या लिखकर डिज़ाइन खोजें" — a full page, not a sheet: the results
-/// grid genuinely needs the room. Voice is one option beside typing,
-/// never a requirement (same on-device search the search box uses — no
-/// search endpoint, no AI backend, §9).
+/// "बोलकर डिज़ाइन खोजें" — a full page, not a sheet, laid out as a running
+/// chat: each thing the user says becomes a message bubble, the app
+/// replies with a text bubble (+ a design grid when there are matches),
+/// and the mic stays pinned at the bottom so the conversation keeps
+/// growing turn after turn instead of resetting each time. Speak-only —
+/// this audience won't type, so there's no text field, only the mic and
+/// tap-to-say suggestion chips.
 ///
-/// There is no design-generation backend in v1 — "custom design" means
-/// finding and handing over a real matching design from the catalogue,
-/// counted against the daily free quota only when the user actually
-/// picks one. Every match — even a single one — goes into the results
-/// grid rather than auto-opening; the pick is always the user's call.
+/// The reply is real, scripted app copy plus a real catalogue search
+/// (§9) — never a generated message. There is no design-generation
+/// backend in v1: "custom design" means finding and handing over a real
+/// matching design, counted against the daily free quota only once the
+/// user actually picks one. Every match — even a single one — goes into
+/// the results grid rather than auto-opening; the pick is always the
+/// user's call.
 class CustomDesignScreen extends StatefulWidget {
   const CustomDesignScreen({super.key});
 
@@ -41,17 +46,29 @@ class CustomDesignScreen extends StatefulWidget {
   State<CustomDesignScreen> createState() => _CustomDesignScreenState();
 }
 
+class _ChatMessage {
+  final bool isUser;
+  final String text;
+  final List<Design> designs;
+
+  const _ChatMessage.user(this.text)
+      : isUser = true,
+        designs = const [];
+
+  const _ChatMessage.agent(this.text, {this.designs = const []}) : isUser = false;
+}
+
 class _CustomDesignScreenState extends State<CustomDesignScreen>
     with SingleTickerProviderStateMixin {
   final SpeechToText _speech = SpeechToText();
-  final TextEditingController _controller = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
   late final AnimationController _pulseController;
 
   bool _speechReady = false;
   bool _micAvailable = true;
   bool _listening = false;
-  List<Design> _results = const [];
-  bool _searched = false;
+  String _liveText = '';
+  final List<_ChatMessage> _messages = [];
 
   @override
   void initState() {
@@ -66,9 +83,20 @@ class _CustomDesignScreenState extends State<CustomDesignScreen>
   @override
   void dispose() {
     _pulseController.dispose();
-    _controller.dispose();
+    _scrollController.dispose();
     _speech.stop();
     super.dispose();
+  }
+
+  void _scrollToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_scrollController.hasClients) return;
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOut,
+      );
+    });
   }
 
   Future<void> _initSpeech() async {
@@ -109,36 +137,47 @@ class _CustomDesignScreenState extends State<CustomDesignScreen>
       if (!mounted || !_speechReady) return;
     }
     final langCode = context.read<AppLanguageController>().code;
-    setState(() => _listening = true);
+    setState(() {
+      _listening = true;
+      _liveText = '';
+    });
     await _speech.listen(
       onResult: (result) {
         if (!mounted) return;
-        _controller.text = result.recognizedWords;
-        _controller.selection = TextSelection.collapsed(offset: _controller.text.length);
-        if (result.finalResult) _runSearch();
+        setState(() => _liveText = result.recognizedWords);
+        if (result.finalResult) _runSearch(result.recognizedWords);
       },
       listenOptions: SpeechListenOptions(localeId: _localeIdFor(langCode)),
     );
   }
 
-  void _useSuggestion(String term) {
-    _controller.text = term;
-    _controller.selection = TextSelection.collapsed(offset: term.length);
-    _runSearch();
-  }
+  void _useSuggestion(String term) => _runSearch(term);
 
-  void _runSearch() {
-    final query = _controller.text.trim();
+  // Appends one exchange to the running chat — the user's turn, then the
+  // app's scripted reply (+ a real results grid when there are matches).
+  // The conversation just keeps growing; nothing here resets on a new
+  // search.
+  void _runSearch(String query) {
+    query = query.trim();
     if (query.isEmpty) return;
-    FocusScope.of(context).unfocus();
+    setState(() => _liveText = '');
     final payload = context.read<ContentViewModel>().payload;
     final matches = payload == null
         ? const <Design>[]
         : SearchService.search(query, payload.designs, payload.tags);
+    final results = matches.take(12).toList();
     setState(() {
-      _results = matches.take(12).toList();
-      _searched = true;
+      _messages.add(_ChatMessage.user(query));
+      _messages.add(
+        results.isEmpty
+            ? const _ChatMessage.agent('माफ़ कीजिए, इसके लिए कोई डिज़ाइन नहीं मिला। कुछ और बोलकर देखें।')
+            : _ChatMessage.agent(
+                'ये लीजिए, "$query" के लिए ${results.length} डिज़ाइन मिले —',
+                designs: results,
+              ),
+      );
     });
+    _scrollToBottom();
   }
 
   Future<void> _pickResult(Design design) async {
@@ -172,73 +211,199 @@ class _CustomDesignScreenState extends State<CustomDesignScreen>
       ),
       body: SafeArea(
         top: false,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(
-            AppSpacing.screenPadding,
-            AppSpacing.sm,
-            AppSpacing.screenPadding,
-            AppSpacing.xxl,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _QuotaBanner(quota: quota),
-              const SizedBox(height: AppSpacing.lg),
-              Text('बोलकर या लिखकर डिज़ाइन खोजें', style: AppTextStyles.cardTitle()),
-              const SizedBox(height: AppSpacing.xs),
-              Text('जैसे "मेरी बेटी का जन्मदिन", या नीचे से चुन लें', style: AppTextStyles.secondary()),
-              const SizedBox(height: AppSpacing.md),
-              _SearchField(
-                controller: _controller,
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.screenPadding,
+                AppSpacing.sm,
+                AppSpacing.screenPadding,
+                0,
+              ),
+              child: _QuotaBanner(quota: quota),
+            ),
+            Expanded(
+              child: _messages.isEmpty
+                  ? _EmptyChatState(onSuggestionTap: _useSuggestion)
+                  : ListView.builder(
+                      controller: _scrollController,
+                      padding: const EdgeInsets.fromLTRB(
+                        AppSpacing.screenPadding,
+                        AppSpacing.md,
+                        AppSpacing.screenPadding,
+                        AppSpacing.md,
+                      ),
+                      itemCount: _messages.length,
+                      itemBuilder: (context, i) => _ChatBubble(
+                        message: _messages[i],
+                        onPickDesign: _pickResult,
+                      ),
+                    ),
+            ),
+            // Pinned mic bar — the conversation keeps growing above it,
+            // this stays put so the user can keep talking turn after turn.
+            Container(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.screenPadding,
+                AppSpacing.sm,
+                AppSpacing.screenPadding,
+                AppSpacing.md,
+              ),
+              decoration: BoxDecoration(
+                color: AppColors.background,
+                border: Border(top: BorderSide(color: AppColors.border.withValues(alpha: 0.6))),
+              ),
+              child: _SpeakBar(
                 listening: _listening,
-                pulseController: _pulseController,
                 micAvailable: _micAvailable,
-                onSubmit: _runSearch,
+                liveText: _liveText,
+                pulseController: _pulseController,
                 onMicTap: _toggleMic,
               ),
-              const SizedBox(height: AppSpacing.md),
-              Wrap(
-                spacing: AppSpacing.sm,
-                runSpacing: AppSpacing.sm,
-                children: [
-                  for (final term in _suggestions)
-                    _SuggestionChip(label: term, onTap: () => _useSuggestion(term)),
-                ],
-              ),
-              if (_searched && _results.isNotEmpty) ...[
-                const SizedBox(height: AppSpacing.xl),
-                GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: _results.length,
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    mainAxisSpacing: AppSpacing.cardGap,
-                    crossAxisSpacing: AppSpacing.cardGap,
-                    childAspectRatio: 0.8,
-                  ),
-                  itemBuilder: (context, i) {
-                    final design = _results[i];
-                    return StatusGridCard(
-                      status: DesignMapper.toStatusItem(design),
-                      width: double.infinity,
-                      onUse: () => _pickResult(design),
-                    );
-                  },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _EmptyChatState extends StatelessWidget {
+  final ValueChanged<String> onSuggestionTap;
+
+  const _EmptyChatState({required this.onSuggestionTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 72,
+              height: 72,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [AppColors.secondary, AppColors.primary],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
-              ] else if (_searched && _results.isEmpty) ...[
-                const SizedBox(height: AppSpacing.xl),
-                Center(
-                  child: Text(
-                    'कोई मैच नहीं मिला — ऊपर दिए विकल्पों में से चुनें',
-                    textAlign: TextAlign.center,
-                    style: AppTextStyles.secondary(),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(AppIcons.microphoneSolid, size: 28, color: Colors.white),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            Text('बताइए, किसके लिए डिज़ाइन चाहिए?', textAlign: TextAlign.center, style: AppTextStyles.cardTitle()),
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              'नीचे मौजूद माइक दबाकर बोलें',
+              textAlign: TextAlign.center,
+              style: AppTextStyles.secondary(),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            Wrap(
+              alignment: WrapAlignment.center,
+              spacing: AppSpacing.sm,
+              runSpacing: AppSpacing.sm,
+              children: [
+                for (final term in _suggestions)
+                  _SuggestionChip(label: term, onTap: () => onSuggestionTap(term)),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ChatBubble extends StatelessWidget {
+  final _ChatMessage message;
+  final ValueChanged<Design> onPickDesign;
+
+  const _ChatBubble({required this.message, required this.onPickDesign});
+
+  @override
+  Widget build(BuildContext context) {
+    final isUser = message.isUser;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.md),
+      child: Column(
+        crossAxisAlignment: isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (!isUser) ...[
+                Container(
+                  width: 26,
+                  height: 26,
+                  alignment: Alignment.center,
+                  margin: const EdgeInsets.only(right: AppSpacing.xs),
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [AppColors.secondary, AppColors.primary],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    shape: BoxShape.circle,
                   ),
+                  child: const Icon(AppIcons.sparkle, size: 12, color: Colors.white),
                 ),
               ],
+              Flexible(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  decoration: BoxDecoration(
+                    gradient: isUser
+                        ? const LinearGradient(colors: [AppColors.secondary, AppColors.primary])
+                        : null,
+                    color: isUser ? null : AppColors.card,
+                    border: isUser ? null : Border.all(color: AppColors.border),
+                    borderRadius: BorderRadius.only(
+                      topLeft: const Radius.circular(16),
+                      topRight: const Radius.circular(16),
+                      bottomLeft: Radius.circular(isUser ? 16 : 4),
+                      bottomRight: Radius.circular(isUser ? 4 : 16),
+                    ),
+                  ),
+                  child: Text(
+                    message.text,
+                    style: AppTextStyles.body().copyWith(
+                      color: isUser ? Colors.white : AppColors.textPrimary,
+                      fontWeight: isUser ? FontWeight.w600 : FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
-        ),
+          if (message.designs.isNotEmpty) ...[
+            const SizedBox(height: AppSpacing.sm),
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: message.designs.length,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                mainAxisSpacing: AppSpacing.cardGap,
+                crossAxisSpacing: AppSpacing.cardGap,
+                childAspectRatio: 0.8,
+              ),
+              itemBuilder: (context, i) {
+                final design = message.designs[i];
+                return StatusGridCard(
+                  status: DesignMapper.toStatusItem(design),
+                  width: double.infinity,
+                  onUse: () => onPickDesign(design),
+                );
+              },
+            ),
+          ],
+        ],
       ),
     );
   }
@@ -298,129 +463,102 @@ class _QuotaBanner extends StatelessWidget {
   }
 }
 
-/// One unified entry point — type, or tap the mic to dictate into the
-/// same field. Voice is an option beside typing, never a requirement.
-class _SearchField extends StatelessWidget {
-  final TextEditingController controller;
+/// Pinned footer — a tap-to-speak mic plus, while listening, the live
+/// interim words right beside it. Compact by design: the conversation
+/// above is the focus, this is just the always-available way to add the
+/// next turn to it.
+class _SpeakBar extends StatelessWidget {
   final bool listening;
   final bool micAvailable;
+  final String liveText;
   final AnimationController pulseController;
-  final VoidCallback onSubmit;
   final VoidCallback onMicTap;
 
-  const _SearchField({
-    required this.controller,
+  const _SpeakBar({
     required this.listening,
     required this.micAvailable,
+    required this.liveText,
     required this.pulseController,
-    required this.onSubmit,
     required this.onMicTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.card,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.textPrimary.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          const SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: TextField(
-              controller: controller,
-              textInputAction: TextInputAction.search,
-              onSubmitted: (_) => onSubmit(),
-              style: AppTextStyles.body(),
-              // The app-wide input theme fills the field and draws its
-              // own enabled/focused borders — those have to be switched
-              // off explicitly too, not just the top-level `border`, or
-              // this Container's own rounded border shows up doubled.
-              decoration: const InputDecoration(
-                isCollapsed: true,
-                filled: false,
-                border: InputBorder.none,
-                enabledBorder: InputBorder.none,
-                focusedBorder: InputBorder.none,
-                contentPadding: EdgeInsets.symmetric(vertical: 14),
-                hintText: 'जैसे "मेरी बेटी का जन्मदिन"',
-              ),
-            ),
-          ),
-          if (micAvailable)
-            AnimatedBuilder(
-              animation: pulseController,
-              builder: (context, child) {
-                final t = pulseController.value;
-                return Padding(
-                  padding: const EdgeInsets.all(6),
-                  child: GestureDetector(
-                    onTap: onMicTap,
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        if (listening)
-                          Opacity(
-                            opacity: (1 - t) * 0.5,
-                            child: Container(
-                              width: 32 + t * 16,
-                              height: 32 + t * 16,
-                              decoration: const BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: AppColors.primary,
-                              ),
-                            ),
-                          ),
-                        Container(
-                          width: 38,
-                          height: 38,
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [AppColors.secondary, AppColors.primary],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
+    final label = !micAvailable
+        ? 'माइक उपलब्ध नहीं है'
+        : listening
+            ? (liveText.isEmpty ? 'सुन रहा हूँ...' : liveText)
+            : 'बोलने के लिए टैप करें';
+
+    return Row(
+      children: [
+        GestureDetector(
+          onTap: micAvailable ? onMicTap : null,
+          child: AnimatedBuilder(
+            animation: pulseController,
+            builder: (context, child) {
+              final t = pulseController.value;
+              return SizedBox(
+                width: 68,
+                height: 68,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    if (listening)
+                      Opacity(
+                        opacity: (1 - t) * 0.4,
+                        child: Container(
+                          width: 52 + t * 16,
+                          height: 52 + t * 16,
+                          decoration: const BoxDecoration(
                             shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            listening ? AppIcons.waveform : AppIcons.microphoneSolid,
-                            size: 15,
-                            color: Colors.white,
+                            color: AppColors.primary,
                           ),
                         ),
-                      ],
+                      ),
+                    Container(
+                      width: 52,
+                      height: 52,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: micAvailable
+                              ? const [AppColors.secondary, AppColors.primary]
+                              : [AppColors.textSecondary.withValues(alpha: 0.5), AppColors.textSecondary],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.primary.withValues(alpha: 0.3),
+                            blurRadius: 14,
+                            offset: const Offset(0, 5),
+                          ),
+                        ],
+                      ),
+                      child: Icon(
+                        listening ? AppIcons.waveform : AppIcons.microphoneSolid,
+                        size: 22,
+                        color: Colors.white,
+                      ),
                     ),
-                  ),
-                );
-              },
-            )
-          else
-            GestureDetector(
-              onTap: onSubmit,
-              child: Container(
-                margin: const EdgeInsets.all(6),
-                width: 38,
-                height: 38,
-                alignment: Alignment.center,
-                decoration: const BoxDecoration(
-                  color: AppColors.lightAccent,
-                  shape: BoxShape.circle,
+                  ],
                 ),
-                child: const Icon(AppIcons.search, size: 15, color: AppColors.primary),
-              ),
-            ),
-        ],
-      ),
+              );
+            },
+          ),
+        ),
+        const SizedBox(width: AppSpacing.sm),
+        Expanded(
+          child: Text(
+            label,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: AppTextStyles.secondary().copyWith(fontWeight: FontWeight.w600),
+          ),
+        ),
+      ],
     );
   }
 }
