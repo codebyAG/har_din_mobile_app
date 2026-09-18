@@ -21,38 +21,26 @@ class LanguageSelectScreen extends StatefulWidget {
 class _Option {
   final String code;
   final String label;
-  const _Option(this.code, this.label);
+  final String labelEn;
+  const _Option(this.code, this.label, this.labelEn);
 }
 
-// English name shown as the small second line under each card's own
-// script — purely cosmetic, so an unlisted code just shows one line.
-const _englishNames = {
-  'hi': 'Hindi',
-  'en': 'English',
-  'mr': 'Marathi',
-  'ta': 'Tamil',
-  'te': 'Telugu',
-  'kn': 'Kannada',
-  'ml': 'Malayalam',
-  'gu': 'Gujarati',
-  'pa': 'Punjabi',
-  'bn': 'Bengali',
-};
-
-// One flat pastel per card, cycling — not a gradient, not all the same
-// color, so the grid reads as a set of distinct chips rather than one
-// repeated tile.
-const _cardColors = [
-  Color(0xFFFBD7CE), // peach
-  Color(0xFFEDE6D8), // warm cream
-  Color(0xFFD6ECE1), // mint
-  Color(0xFFDCE1F0), // periwinkle
-  Color(0xFFF6E3B4), // butter
-  Color(0xFFDDEFD9), // sage
-  Color(0xFFF1D9E8), // blush
-  Color(0xFFD8ECEF), // sky
-  Color(0xFFF0DCEF), // lilac
-  Color(0xFFEAD9C9), // sand
+// (background tint, matching bold text color) per card, cycling — each
+// language gets its own light-tint chip with colored text (not plain
+// black), so the grid reads as a distinct palette per row instead of
+// uniform tiles with one shared text color.
+const _cardPalette = [
+  (Color(0xFFFBDADA), Color(0xFFDB5C5C)), // rose
+  (Color(0xFFEAEAEA), Color(0xFF4A4A4A)), // grey
+  (Color(0xFFE7DEF5), Color(0xFF8B6FD9)), // purple
+  (Color(0xFFD9F0EA), Color(0xFF2E9E80)), // teal
+  (Color(0xFFDCE6F7), Color(0xFF5B8DEF)), // blue
+  (Color(0xFFDFE1F5), Color(0xFF6A6FD6)), // indigo
+  (Color(0xFFDFF1E1), Color(0xFF43A164)), // green
+  (Color(0xFFF7EFD0), Color(0xFFD9A020)), // amber
+  (Color(0xFFF6D9DC), Color(0xFFD9536B)), // pink
+  (Color(0xFFF0DEF3), Color(0xFFAD54C0)), // magenta
+  (Color(0xFFE9D9CE), Color(0xFF9C6B4F)), // brown
 ];
 
 class _LanguageSelectScreenState extends State<LanguageSelectScreen> {
@@ -60,9 +48,9 @@ class _LanguageSelectScreenState extends State<LanguageSelectScreen> {
   // (offline on first-ever launch) — otherwise replaced by the real
   // response (APP-CHANGES-01 §7).
   static const _fallbackOptions = [
-    _Option('hi', 'हिन्दी'),
-    _Option('en', 'English'),
-    _Option('mr', 'मराठी'),
+    _Option('hi', 'हिन्दी', 'Hindi'),
+    _Option('en', 'English', 'English'),
+    _Option('mr', 'मराठी', 'Marathi'),
   ];
 
   // Default selection — pre-picked so "आगे बढ़ें" works even if the user
@@ -85,7 +73,8 @@ class _LanguageSelectScreenState extends State<LanguageSelectScreen> {
     final languages = await context.read<ContentViewModel>().fetchLanguages();
     if (!mounted) return;
     if (languages.isNotEmpty) {
-      final options = languages.map((l) => _Option(l.code, l.label)).toList();
+      final options =
+          languages.map((l) => _Option(l.code, l.label, l.labelEn)).toList();
       setState(() {
         _options = options;
         _selected =
@@ -136,13 +125,13 @@ class _LanguageSelectScreenState extends State<LanguageSelectScreen> {
                     itemCount: _options.length,
                     gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2,
-                      mainAxisSpacing: AppSpacing.md,
-                      crossAxisSpacing: AppSpacing.md,
-                      childAspectRatio: 1.5,
+                      mainAxisSpacing: AppSpacing.sm,
+                      crossAxisSpacing: AppSpacing.sm,
+                      childAspectRatio: 1.7,
                     ),
                     itemBuilder: (context, i) => _LanguageCard(
                       option: _options[i],
-                      color: _cardColors[i % _cardColors.length],
+                      palette: _cardPalette[i % _cardPalette.length],
                       selected: _options[i].code == _selected,
                       onTap: () => setState(() => _selected = _options[i].code),
                     ),
@@ -163,31 +152,27 @@ class _LanguageSelectScreenState extends State<LanguageSelectScreen> {
 
 class _LanguageCard extends StatelessWidget {
   final _Option option;
-  final Color color;
+  final (Color background, Color text) palette;
   final bool selected;
   final VoidCallback onTap;
 
   const _LanguageCard({
     required this.option,
-    required this.color,
+    required this.palette,
     required this.selected,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    final english = _englishNames[option.code];
+    final english = option.labelEn;
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
         decoration: BoxDecoration(
-          color: color,
+          color: palette.$1,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: selected ? AppColors.success : Colors.transparent,
-            width: 2,
-          ),
         ),
         child: Stack(
           children: [
@@ -199,11 +184,16 @@ class _LanguageCard extends StatelessWidget {
                 children: [
                   Text(
                     option.label,
-                    style: AppTextStyles.cardTitle().copyWith(fontSize: 18),
+                    style: AppTextStyles.cardTitle()
+                        .copyWith(fontSize: 18, color: palette.$2, fontWeight: FontWeight.w700),
                   ),
-                  if (english != null && english != option.label) ...[
+                  if (english != option.label) ...[
                     const SizedBox(height: 2),
-                    Text(english, style: AppTextStyles.secondary()),
+                    Text(
+                      english,
+                      style: AppTextStyles.secondary()
+                          .copyWith(color: palette.$2.withValues(alpha: 0.65)),
+                    ),
                   ],
                 ],
               ),

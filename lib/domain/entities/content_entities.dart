@@ -23,12 +23,17 @@ class VersionResponse {
 class Language {
   final String code;
   final String label;
+  // Latin-script name (LANGUAGE-LABELS.md) — lets a user who can't read
+  // `label`'s own script still identify the row. Falls back to `label`
+  // itself if an older payload doesn't carry the field yet.
+  final String labelEn;
 
-  const Language({required this.code, required this.label});
+  const Language({required this.code, required this.label, required this.labelEn});
 
   factory Language.fromJson(Map<String, dynamic> json) => Language(
         code: json['code'] as String,
         label: json['label'] as String,
+        labelEn: json['label_en'] as String? ?? json['label'] as String,
       );
 }
 
@@ -309,7 +314,9 @@ class ContentPayload {
 
   Map<String, dynamic> toJson() => {
         'version': version,
-        'languages': languages.map((l) => {'code': l.code, 'label': l.label}).toList(),
+        'languages': languages
+            .map((l) => {'code': l.code, 'label': l.label, 'label_en': l.labelEn})
+            .toList(),
         'time_bands':
             timeBands.map((k, v) => MapEntry(k, [v.start, v.endExclusive])),
         'home': {

@@ -17,8 +17,17 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  Future<void> _pickOption(String title, List<String> options, String current,
-      ValueChanged<String> onPicked) async {
+  // `subtitles[label]`, when given, renders a second Latin-script line
+  // under each row (LANGUAGE-LABELS.md) — same treatment as the
+  // first-launch language picker, so a user who can't read the native
+  // label can still identify the row here.
+  Future<void> _pickOption(
+    String title,
+    List<String> options,
+    String current,
+    ValueChanged<String> onPicked, {
+    Map<String, String>? subtitles,
+  }) async {
     final picked = await showModalBottomSheet<String>(
       context: context,
       backgroundColor: AppColors.card,
@@ -36,6 +45,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
             for (final option in options)
               ListTile(
                 title: Text(option, style: AppTextStyles.body()),
+                subtitle: subtitles != null && subtitles[option] != option
+                    ? Text(subtitles[option]!, style: AppTextStyles.secondary())
+                    : null,
                 trailing: option == current
                     ? const Icon(AppIcons.free, color: AppColors.primary, size: 18)
                     : null,
