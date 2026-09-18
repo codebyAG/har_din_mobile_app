@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 import 'package:provider/provider.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 
@@ -61,6 +64,7 @@ class _ChatMessage {
 class _CustomDesignScreenState extends State<CustomDesignScreen>
     with SingleTickerProviderStateMixin {
   final SpeechToText _speech = SpeechToText();
+  final FlutterTts _tts = FlutterTts();
   final ScrollController _scrollController = ScrollController();
   late final AnimationController _pulseController;
 
@@ -78,6 +82,7 @@ class _CustomDesignScreenState extends State<CustomDesignScreen>
       duration: const Duration(milliseconds: 1400),
     )..repeat();
     _initSpeech();
+    _initTts();
   }
 
   @override
@@ -85,7 +90,23 @@ class _CustomDesignScreenState extends State<CustomDesignScreen>
     _pulseController.dispose();
     _scrollController.dispose();
     _speech.stop();
+    _tts.stop();
     super.dispose();
+  }
+
+  Future<void> _initTts() async {
+    // The app's TTS voice never generates content — it only reads out
+    // the same scripted reply text already shown in the chat bubble, so
+    // the spoken and written app messages always match exactly.
+    await _tts.setSpeechRate(0.45);
+    await _tts.setPitch(1.0);
+  }
+
+  Future<void> _speak(String text) async {
+    if (!mounted) return;
+    final langCode = context.read<AppLanguageController>().code;
+    await _tts.setLanguage(_localeIdFor(langCode).replaceAll('_', '-'));
+    await _tts.speak(text);
   }
 
   void _scrollToBottom() {
@@ -166,18 +187,15 @@ class _CustomDesignScreenState extends State<CustomDesignScreen>
         ? const <Design>[]
         : SearchService.search(query, payload.designs, payload.tags);
     final results = matches.take(12).toList();
+    final agentText = results.isEmpty
+        ? 'माफ़ कीजिए, इसके लिए कोई डिज़ाइन नहीं मिला। कुछ और बोलकर देखें।'
+        : 'ये लीजिए, "$query" के लिए ${results.length} डिज़ाइन मिले —';
     setState(() {
       _messages.add(_ChatMessage.user(query));
-      _messages.add(
-        results.isEmpty
-            ? const _ChatMessage.agent('माफ़ कीजिए, इसके लिए कोई डिज़ाइन नहीं मिला। कुछ और बोलकर देखें।')
-            : _ChatMessage.agent(
-                'ये लीजिए, "$query" के लिए ${results.length} डिज़ाइन मिले —',
-                designs: results,
-              ),
-      );
+      _messages.add(_ChatMessage.agent(agentText, designs: results));
     });
     _scrollToBottom();
+    unawaited(_speak(agentText));
   }
 
   Future<void> _pickResult(Design design) async {

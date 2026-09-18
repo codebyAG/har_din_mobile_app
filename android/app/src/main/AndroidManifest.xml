@@ -65,5 +65,10 @@
              this, MainActivity's package-targeted intent can't find
              WhatsApp even when it's installed. -->
         <package android:name="com.whatsapp"/>
+        <!-- flutter_tts needs this to find the device's installed TTS
+             engine(s) on Android 11+. -->
+        <intent>
+            <action android:name="android.intent.action.TTS_SERVICE"/>
+        </intent>
     </queries>
 </manifest>
