@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
-import '../theme/app_colors.dart';
-
 /// A single shimmering placeholder shape — a rounded rect by default.
 /// Compose several into a skeleton that mirrors the real content's layout.
 class ShimmerBox extends StatelessWidget {
@@ -35,9 +33,8 @@ class ShimmerBox extends StatelessWidget {
   }
 }
 
-/// Wraps skeleton content in the shimmer sweep. Base/highlight are tuned
-/// to the app's warm cream palette rather than the library's cool grey
-/// default, so the loading state still feels on-brand.
+/// Wraps skeleton content in the shimmer sweep. Plain grey, everywhere —
+/// the standard loading look, used identically across every screen.
 class AppShimmer extends StatelessWidget {
   final Widget child;
 
@@ -46,8 +43,8 @@ class AppShimmer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Shimmer.fromColors(
-      baseColor: AppColors.border,
-      highlightColor: AppColors.lightAccent,
+      baseColor: const Color(0xFFE0E0E0),
+      highlightColor: const Color(0xFFF2F2F2),
       period: const Duration(milliseconds: 1400),
       child: child,
     );
