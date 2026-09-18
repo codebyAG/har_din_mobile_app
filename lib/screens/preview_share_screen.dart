@@ -96,7 +96,7 @@ class _PreviewShareScreenState extends State<PreviewShareScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(title: const Text('Preview')),
+      appBar: AppBar(title: const Text('डिज़ाइन देखें')),
       body: SafeArea(
         top: false,
         child: Padding(

@@ -282,8 +282,8 @@ class _EmptyChatState extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 72,
-              height: 72,
+              width: 88,
+              height: 88,
               alignment: Alignment.center,
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
@@ -293,17 +293,28 @@ class _EmptyChatState extends StatelessWidget {
                 ),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(AppIcons.microphoneSolid, size: 28, color: Colors.white),
+              child: const Icon(AppIcons.microphoneSolid, size: 36, color: Colors.white),
             ),
             const SizedBox(height: AppSpacing.lg),
-            Text('बताइए, किसके लिए डिज़ाइन चाहिए?', textAlign: TextAlign.center, style: AppTextStyles.cardTitle()),
+            Text(
+              'बताइए, किसके लिए डिज़ाइन चाहिए?',
+              textAlign: TextAlign.center,
+              style: AppTextStyles.screenTitle().copyWith(fontSize: 21),
+            ),
             const SizedBox(height: AppSpacing.sm),
             Text(
-              'नीचे मौजूद माइक दबाकर बोलें',
+              'नीचे माइक दबाकर बोलें',
               textAlign: TextAlign.center,
-              style: AppTextStyles.secondary(),
+              style: AppTextStyles.body().copyWith(fontSize: 15, color: AppColors.textSecondary),
             ),
-            const SizedBox(height: AppSpacing.lg),
+            const SizedBox(height: AppSpacing.xl),
+            Text(
+              'या इनमें से किसी एक पर उंगली रखें',
+              textAlign: TextAlign.center,
+              style: AppTextStyles.body()
+                  .copyWith(fontSize: 15, fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: AppSpacing.sm),
             Wrap(
               alignment: WrapAlignment.center,
               spacing: AppSpacing.sm,
@@ -373,6 +384,7 @@ class _ChatBubble extends StatelessWidget {
                   child: Text(
                     message.text,
                     style: AppTextStyles.body().copyWith(
+                      fontSize: 15.5,
                       color: isUser ? Colors.white : AppColors.textPrimary,
                       fontWeight: isUser ? FontWeight.w600 : FontWeight.w500,
                     ),
@@ -499,8 +511,8 @@ class _SpeakBar extends StatelessWidget {
             builder: (context, child) {
               final t = pulseController.value;
               return SizedBox(
-                width: 68,
-                height: 68,
+                width: 80,
+                height: 80,
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
@@ -508,8 +520,8 @@ class _SpeakBar extends StatelessWidget {
                       Opacity(
                         opacity: (1 - t) * 0.4,
                         child: Container(
-                          width: 52 + t * 16,
-                          height: 52 + t * 16,
+                          width: 62 + t * 16,
+                          height: 62 + t * 16,
                           decoration: const BoxDecoration(
                             shape: BoxShape.circle,
                             color: AppColors.primary,
@@ -517,8 +529,8 @@ class _SpeakBar extends StatelessWidget {
                         ),
                       ),
                     Container(
-                      width: 52,
-                      height: 52,
+                      width: 62,
+                      height: 62,
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
@@ -539,7 +551,7 @@ class _SpeakBar extends StatelessWidget {
                       ),
                       child: Icon(
                         listening ? AppIcons.waveform : AppIcons.microphoneSolid,
-                        size: 22,
+                        size: 26,
                         color: Colors.white,
                       ),
                     ),
@@ -555,7 +567,7 @@ class _SpeakBar extends StatelessWidget {
             label,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
-            style: AppTextStyles.secondary().copyWith(fontWeight: FontWeight.w600),
+            style: AppTextStyles.body().copyWith(fontSize: 15, fontWeight: FontWeight.w600),
           ),
         ),
       ],
@@ -574,15 +586,15 @@ class _SuggestionChip extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 13),
         decoration: BoxDecoration(
           color: AppColors.lightAccent,
           borderRadius: BorderRadius.circular(100),
         ),
         child: Text(
           label,
-          style: AppTextStyles.secondary(color: AppColors.primaryDark)
-              .copyWith(fontWeight: FontWeight.w600),
+          style: AppTextStyles.body(color: AppColors.primaryDark)
+              .copyWith(fontSize: 15, fontWeight: FontWeight.w600),
         ),
       ),
     );
