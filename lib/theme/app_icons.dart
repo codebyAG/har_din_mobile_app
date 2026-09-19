@@ -109,4 +109,20 @@ class AppIcons {
   static const IconData microphoneSolid = FontAwesomeIcons.microphone;
   static const IconData waveform = FontAwesomeIcons.waveSquare;
   static const IconData sparkle = FontAwesomeIcons.wandMagicSparkles;
+
+  // Custom-design flow (input → generating → editor → share sheet)
+  static const IconData history = FontAwesomeIcons.clockRotateLeft;
+  static const IconData keyboard = FontAwesomeIcons.keyboard;
+  static const IconData send = FontAwesomeIcons.paperPlane;
+  static const IconData textTool = FontAwesomeIcons.font;
+  static const IconData styleTool = FontAwesomeIcons.palette;
+  static const IconData stickerTool = FontAwesomeIcons.faceSmile;
+  static const IconData imageTool = FontAwesomeIcons.image;
+  static const IconData backgroundTool = FontAwesomeIcons.layerGroup;
+  static const IconData undo = FontAwesomeIcons.arrowRotateLeft;
+  static const IconData redo = FontAwesomeIcons.arrowRotateRight;
+  static const IconData reset = FontAwesomeIcons.arrowsRotate;
+  static const IconData copy = FontAwesomeIcons.copy;
+  static const IconData instagram = FontAwesomeIcons.instagram;
+  static const IconData facebook = FontAwesomeIcons.facebookF;
 }
