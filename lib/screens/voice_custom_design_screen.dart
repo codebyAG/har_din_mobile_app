@@ -561,7 +561,16 @@ class _InputStep extends StatelessWidget {
                     controller: textController,
                     style: AppTextStyles.body().copyWith(fontSize: 15),
                     decoration: const InputDecoration(
+                      // The app-wide InputDecorationTheme sets its own
+                      // enabledBorder/focusedBorder/fill — overriding just
+                      // `border` above isn't enough to suppress those, so
+                      // this field ends up double-bordered with the
+                      // Container it sits in unless every border state
+                      // (and the fill) is explicitly turned off here too.
                       border: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      focusedBorder: InputBorder.none,
+                      filled: false,
                       hintText: 'Type your idea here...',
                       isDense: true,
                       contentPadding: EdgeInsets.symmetric(vertical: 14),
