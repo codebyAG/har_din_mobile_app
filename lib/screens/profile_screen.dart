@@ -10,7 +10,8 @@ import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
 import '../widgets/festive_glow.dart';
 import '../widgets/glass_container.dart';
-import 'login_screen.dart';
+import '../widgets/logout_dialog.dart';
+import 'auth_screen.dart';
 import 'saved_screen.dart';
 import 'settings_screen.dart';
 
@@ -107,9 +108,9 @@ class ProfileScreen extends StatelessWidget {
                       ? 'लॉगआउट (${auth.session!.name.isEmpty ? auth.session!.phone : auth.session!.name})'
                       : 'लॉगिन / साइन अप',
                   onTap: () => auth.isLoggedIn
-                      ? auth.logout()
+                      ? logoutWithConfirm(context)
                       : Navigator.of(context).push<bool>(
-                          MaterialPageRoute(builder: (_) => const LoginScreen()),
+                          MaterialPageRoute(builder: (_) => const AuthScreen()),
                         ),
                 ),
                 const SizedBox(height: AppSpacing.xl),

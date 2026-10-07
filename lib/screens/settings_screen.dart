@@ -3,11 +3,13 @@ import 'package:provider/provider.dart';
 
 import '../core/services/image_cache_service.dart';
 import '../presentation/providers/app_language_controller.dart';
+import '../presentation/providers/auth_controller.dart';
 import '../presentation/providers/content_view_model.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_icons.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
+import '../widgets/logout_dialog.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -68,6 +70,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final t = context.watch<ContentViewModel>().t;
+    final auth = context.watch<AuthController>();
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -126,6 +129,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
               label: 'नोटिफिकेशन',
               onTap: () => _snack(t('settings.notifications_soon')),
             ),
+            if (auth.isLoggedIn)
+              _SettingsTile(
+                icon: Icons.logout,
+                gradient: const [Color(0xFFFF7A70), AppColors.like],
+                label: 'लॉगआउट',
+                onTap: () => logoutWithConfirm(context),
+              ),
             const SizedBox(height: AppSpacing.lg),
             const _SectionLabel('प्राथमिकताएं'),
             const SizedBox(height: AppSpacing.sm),

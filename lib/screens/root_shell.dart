@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../core/services/app_update_service.dart';
@@ -28,6 +29,7 @@ class RootShell extends StatefulWidget {
 }
 
 class _RootShellState extends State<RootShell> {
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
   int _index = 0;
   bool _loadTriggered = false;
   bool _languageMissingHandled = false;
@@ -38,6 +40,45 @@ class _RootShellState extends State<RootShell> {
     SavedScreen(),
     ProfileScreen(),
   ];
+
+  /// Back press on the root: close the drawer, else go back to Home from
+  /// another tab, else ask before leaving the app.
+  Future<void> _onBackPressed() async {
+    if (_scaffoldKey.currentState?.isDrawerOpen ?? false) {
+      _scaffoldKey.currentState!.closeDrawer();
+      return;
+    }
+    if (_index != 0) {
+      setState(() => _index = 0);
+      return;
+    }
+    final exit = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: AppColors.card,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text('ऐप बंद करें?', style: AppTextStyles.sectionHeading()),
+        content: Text(
+          'क्या आप सच में हर दिन से बाहर निकलना चाहते हैं?',
+          style: AppTextStyles.body(),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(
+              'रुकें',
+              style: AppTextStyles.body(color: AppColors.textSecondary),
+            ),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text('बाहर निकलें', style: AppTextStyles.button()),
+          ),
+        ],
+      ),
+    );
+    if (exit == true) await SystemNavigator.pop();
+  }
 
   List<_TabSpec> _tabs(ContentViewModel viewModel) => [
         (icon: AppIcons.home, activeIcon: AppIcons.homeSolid, label: viewModel.t('nav.home')),
@@ -92,14 +133,21 @@ class _RootShellState extends State<RootShell> {
       });
     }
 
-    return Scaffold(
-      extendBody: true,
-      drawer: AppDrawer(onSelectTab: (i) => setState(() => _index = i)),
-      body: IndexedStack(index: _index, children: _screens),
-      bottomNavigationBar: _NavBar(
-        selectedIndex: _index,
-        tabs: _tabs(context.watch<ContentViewModel>()),
-        onTabTap: (i) => setState(() => _index = i),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _onBackPressed();
+      },
+      child: Scaffold(
+        key: _scaffoldKey,
+        extendBody: true,
+        drawer: AppDrawer(onSelectTab: (i) => setState(() => _index = i)),
+        body: IndexedStack(index: _index, children: _screens),
+        bottomNavigationBar: _NavBar(
+          selectedIndex: _index,
+          tabs: _tabs(context.watch<ContentViewModel>()),
+          onTabTap: (i) => setState(() => _index = i),
+        ),
       ),
     );
   }

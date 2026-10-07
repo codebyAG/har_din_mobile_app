@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../presentation/providers/auth_controller.dart';
 import '../presentation/providers/content_view_model.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_icons.dart';
@@ -11,6 +12,7 @@ import '../screens/premium_screen.dart';
 import '../screens/quote_maker_screen.dart';
 import '../screens/settings_screen.dart';
 import 'festive_glow.dart';
+import 'logout_dialog.dart';
 
 /// Real navigation drawer for the app — every item does something.
 class AppDrawer extends StatelessWidget {
@@ -31,6 +33,7 @@ class AppDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.watch<ContentViewModel>().t;
+    final isLoggedIn = context.watch<AuthController>().isLoggedIn;
     return Drawer(
       backgroundColor: AppColors.background,
       width: 288,
@@ -95,6 +98,18 @@ class AppDrawer extends StatelessWidget {
                   label: 'सेटिंग',
                   onTap: () => _push(context, const SettingsScreen()),
                 ),
+                if (isLoggedIn)
+                  _DrawerTile(
+                    icon: Icons.logout,
+                    gradient: const [Color(0xFFFF7A70), AppColors.like],
+                    label: 'लॉगआउट',
+                    onTap: () async {
+                      // Dialog opens over the drawer; close the drawer only
+                      // if they actually logged out.
+                      final done = await logoutWithConfirm(context);
+                      if (done && context.mounted) Navigator.of(context).pop();
+                    },
+                  ),
                 _DrawerTile(
                   icon: AppIcons.share,
                   gradient: const [Color(0xFF4FC077), AppColors.success],

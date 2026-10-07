@@ -9,7 +9,7 @@ import '../../domain/entities/auth_session.dart';
 /// so [session] is simply null until the user signs in.
 class AuthController extends ChangeNotifier {
   /// TEMPORARY: the auth endpoints don't exist yet, so while this is true
-  /// login / sign up succeed locally with whatever was typed — no network
+  /// the OTP step succeeds locally with whatever was typed — no network
   /// call, no validation. Set to false once the backend is ready.
   static const bool offlineDemoAuth = true;
 
@@ -31,36 +31,50 @@ class AuthController extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Creates an account. Returns null on success, otherwise a Hindi
+  /// Step 1 of the single auth screen: texts an OTP and learns whether
+  /// the number already has an account (existing -> login, new -> sign
+  /// up). Returns `(exists, null)` on success, `(null, message)` on
+  /// failure. In demo mode every number is treated as new.
+  Future<({bool? exists, String? error})> sendOtp(String phone) async {
+    if (offlineDemoAuth) return (exists: false, error: null);
+    try {
+      return (exists: await _api.sendOtp(phone), error: null);
+    } on ApiRateLimitedException {
+      return (exists: null, error: _rateLimited);
+    } on ApiBadRequestException {
+      return (exists: null, error: 'मोबाइल नंबर सही नहीं है।');
+    } catch (_) {
+      return (exists: null, error: _generic);
+    }
+  }
+
+  /// Step 2: verifies the OTP (the server creates the account if the
+  /// number is new) and stores the session. Returns null on success, otherwise a Hindi
   /// message ready to show the user.
-  Future<String?> signUp({
-    required String name,
+  Future<String?> verifyOtp({
     required String phone,
-    required String password,
-  }) => _authenticate(
-    () => offlineDemoAuth
-        ? _demoSession(name: name, phone: phone)
-        : _api.signUp(name: name, phone: phone, password: password),
-    conflictMessage: 'यह नंबर पहले से रजिस्टर है। लॉगिन करें।',
-  );
-
-  /// Same return convention as [signUp].
-  Future<String?> login({required String phone, required String password}) =>
-      _authenticate(
-        () => offlineDemoAuth
-            ? _demoSession(name: '', phone: phone)
-            : _api.login(phone: phone, password: password),
-        conflictMessage: 'कुछ गड़बड़ हुई। फिर कोशिश करें।',
-      );
-
-  Future<AuthSession> _demoSession({
-    required String name,
-    required String phone,
-  }) async => AuthSession(
-    token: 'demo-token',
-    name: name.trim().isEmpty ? 'हर दिन यूज़र' : name.trim(),
-    phone: phone.trim(),
-  );
+    required String otp,
+  }) async {
+    try {
+      final session = offlineDemoAuth
+          ? AuthSession(
+              token: 'demo-token',
+              name: 'हर दिन यूज़र',
+              phone: phone.trim(),
+            )
+          : await _api.verifyOtp(phone: phone, otp: otp);
+      await _store.writeSession(session);
+      _session = session;
+      notifyListeners();
+      return null;
+    } on ApiRateLimitedException {
+      return _rateLimited;
+    } on ApiBadRequestException {
+      return 'OTP सही नहीं है। दोबारा जाँचें।';
+    } catch (_) {
+      return _generic;
+    }
+  }
 
   Future<void> logout() async {
     await _store.clearSession();
@@ -68,28 +82,7 @@ class AuthController extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<String?> _authenticate(
-    Future<AuthSession> Function() action, {
-    required String conflictMessage,
-  }) async {
-    try {
-      final session = await action();
-      await _store.writeSession(session);
-      _session = session;
-      notifyListeners();
-      return null;
-    } on ApiNotFoundException {
-      return 'मोबाइल नंबर या पासवर्ड सही नहीं है।';
-    } on ApiRateLimitedException {
-      return 'बहुत ज़्यादा कोशिशें हो गईं। थोड़ी देर बाद फिर करें।';
-    } on ApiBadRequestException {
-      return 'दी गई जानकारी सही नहीं है। जाँचकर फिर कोशिश करें।';
-    } on ApiException catch (e) {
-      if (e.statusCode == 401) return 'मोबाइल नंबर या पासवर्ड सही नहीं है।';
-      if (e.statusCode == 409) return conflictMessage;
-      return 'कुछ गड़बड़ हुई। इंटरनेट जाँचकर फिर कोशिश करें।';
-    } catch (_) {
-      return 'कुछ गड़बड़ हुई। फिर कोशिश करें।';
-    }
-  }
+  static const _rateLimited =
+      'बहुत ज़्यादा कोशिशें हो गईं। थोड़ी देर बाद फिर करें।';
+  static const _generic = 'कुछ गड़बड़ हुई। इंटरनेट जाँचकर फिर कोशिश करें।';
 }

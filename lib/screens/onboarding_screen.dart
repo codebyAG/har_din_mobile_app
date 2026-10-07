@@ -7,7 +7,7 @@ import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
 import '../widgets/primary_button.dart';
 import 'language_select_screen.dart';
-import 'login_screen.dart';
+import 'auth_screen.dart';
 import 'root_shell.dart';
 
 /// Second screen shown after the splash — brand intro with a CTA into
@@ -34,8 +34,8 @@ class OnboardingScreen extends StatelessWidget {
   /// "शुरू करें" opens login / sign up first. Signing in or choosing
   /// "बिना लॉगिन आगे बढ़ें" continues into the app; backing out stays here.
   Future<void> _onGetStarted(BuildContext context) async {
-    final result = await Navigator.of(context).push<LoginResult>(
-      MaterialPageRoute(builder: (_) => const LoginScreen(allowSkip: true)),
+    final result = await Navigator.of(context).push<AuthResult>(
+      MaterialPageRoute(builder: (_) => const AuthScreen(allowSkip: true)),
     );
     if (result == null || !context.mounted) return;
     await _onStart(context);
