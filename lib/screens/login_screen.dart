@@ -65,6 +65,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   /// Returns a Hindi message for the first invalid field, or null.
   String? _validate() {
+    if (AuthController.offlineDemoAuth) return null; // accept anything for now
     if (_signUp && _nameController.text.trim().length < 2) {
       return 'अपना नाम लिखें।';
     }

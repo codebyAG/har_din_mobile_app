@@ -8,6 +8,11 @@ import '../../domain/entities/auth_session.dart';
 /// Account state. Guests are fine — the app works without an account —
 /// so [session] is simply null until the user signs in.
 class AuthController extends ChangeNotifier {
+  /// TEMPORARY: the auth endpoints don't exist yet, so while this is true
+  /// login / sign up succeed locally with whatever was typed — no network
+  /// call, no validation. Set to false once the backend is ready.
+  static const bool offlineDemoAuth = true;
+
   AuthController({AuthApiClient? api, LocalStore store = const LocalStore()})
     : _api = api ?? AuthApiClient(),
       _store = store {
@@ -33,16 +38,29 @@ class AuthController extends ChangeNotifier {
     required String phone,
     required String password,
   }) => _authenticate(
-    () => _api.signUp(name: name, phone: phone, password: password),
+    () => offlineDemoAuth
+        ? _demoSession(name: name, phone: phone)
+        : _api.signUp(name: name, phone: phone, password: password),
     conflictMessage: 'यह नंबर पहले से रजिस्टर है। लॉगिन करें।',
   );
 
   /// Same return convention as [signUp].
   Future<String?> login({required String phone, required String password}) =>
       _authenticate(
-        () => _api.login(phone: phone, password: password),
+        () => offlineDemoAuth
+            ? _demoSession(name: '', phone: phone)
+            : _api.login(phone: phone, password: password),
         conflictMessage: 'कुछ गड़बड़ हुई। फिर कोशिश करें।',
       );
+
+  Future<AuthSession> _demoSession({
+    required String name,
+    required String phone,
+  }) async => AuthSession(
+    token: 'demo-token',
+    name: name.trim().isEmpty ? 'हर दिन यूज़र' : name.trim(),
+    phone: phone.trim(),
+  );
 
   Future<void> logout() async {
     await _store.clearSession();
