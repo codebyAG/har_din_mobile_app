@@ -5,6 +5,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../../domain/entities/auth_session.dart';
 import '../../../domain/entities/content_entities.dart';
 
 /// Everything the caching contract (§4) needs to remember between app
@@ -20,6 +21,9 @@ class LocalStore {
 
   static const _kLanguage = 'har_din.language';
   static const _kDeviceId = 'har_din.device_id';
+  static const _kAuthToken = 'har_din.auth_token';
+  static const _kAuthName = 'har_din.auth_name';
+  static const _kAuthPhone = 'har_din.auth_phone';
 
   Future<SharedPreferences> get _prefs async => SharedPreferences.getInstance();
 
@@ -42,7 +46,8 @@ class LocalStore {
 
   Future<String?> getLanguage() async => (await _prefs).getString(_kLanguage);
 
-  Future<void> setLanguage(String code) async => (await _prefs).setString(_kLanguage, code);
+  Future<void> setLanguage(String code) async =>
+      (await _prefs).setString(_kLanguage, code);
 
   // --- version / cache bookkeeping — per language ---
 
@@ -59,7 +64,10 @@ class LocalStore {
   }
 
   Future<void> setLastVersionCheck(String lang, DateTime time) async =>
-      (await _prefs).setInt('har_din.last_version_check.$lang', time.millisecondsSinceEpoch);
+      (await _prefs).setInt(
+        'har_din.last_version_check.$lang',
+        time.millisecondsSinceEpoch,
+      );
 
   // --- device id (analytics batching only — not an account) ---
 
@@ -70,6 +78,33 @@ class LocalStore {
     final id = const Uuid().v4();
     await prefs.setString(_kDeviceId, id);
     return id;
+  }
+
+  // --- account session (login / sign up) ---
+
+  Future<AuthSession?> readSession() async {
+    final prefs = await _prefs;
+    final token = prefs.getString(_kAuthToken);
+    if (token == null) return null;
+    return AuthSession(
+      token: token,
+      name: prefs.getString(_kAuthName) ?? '',
+      phone: prefs.getString(_kAuthPhone) ?? '',
+    );
+  }
+
+  Future<void> writeSession(AuthSession session) async {
+    final prefs = await _prefs;
+    await prefs.setString(_kAuthToken, session.token);
+    await prefs.setString(_kAuthName, session.name);
+    await prefs.setString(_kAuthPhone, session.phone);
+  }
+
+  Future<void> clearSession() async {
+    final prefs = await _prefs;
+    await prefs.remove(_kAuthToken);
+    await prefs.remove(_kAuthName);
+    await prefs.remove(_kAuthPhone);
   }
 
   // --- content payload — one file per language ---
@@ -121,15 +156,19 @@ class LocalStore {
       if (!await file.exists()) return {'downloads': [], 'favorites': []};
       final raw = jsonDecode(await file.readAsString()) as Map<String, dynamic>;
       return {
-        'downloads': (raw['downloads'] as List<dynamic>? ?? []).cast<Map<String, dynamic>>(),
-        'favorites': (raw['favorites'] as List<dynamic>? ?? []).cast<Map<String, dynamic>>(),
+        'downloads': (raw['downloads'] as List<dynamic>? ?? [])
+            .cast<Map<String, dynamic>>(),
+        'favorites': (raw['favorites'] as List<dynamic>? ?? [])
+            .cast<Map<String, dynamic>>(),
       };
     } catch (_) {
       return {'downloads': [], 'favorites': []};
     }
   }
 
-  Future<void> _writeSavedDesigns(Map<String, List<Map<String, dynamic>>> data) async {
+  Future<void> _writeSavedDesigns(
+    Map<String, List<Map<String, dynamic>>> data,
+  ) async {
     final file = await _savedDesignsFile();
     await file.writeAsString(jsonEncode(data));
   }
@@ -202,7 +241,9 @@ class LocalStore {
     return next;
   }
 
-  Future<bool> hasPromptedReview() async => (await _prefs).getBool(_kReviewPrompted) ?? false;
+  Future<bool> hasPromptedReview() async =>
+      (await _prefs).getBool(_kReviewPrompted) ?? false;
 
-  Future<void> setPromptedReview() async => (await _prefs).setBool(_kReviewPrompted, true);
+  Future<void> setPromptedReview() async =>
+      (await _prefs).setBool(_kReviewPrompted, true);
 }

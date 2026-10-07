@@ -728,27 +728,32 @@ class _HomeSkeleton extends StatelessWidget {
         AppSpacing.screenPadding,
         0,
       ),
-      child: Column(
-        children: [
-          const ShimmerBox(height: 64, width: double.infinity),
-          const SizedBox(height: AppSpacing.xl),
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: 9,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
-              mainAxisSpacing: AppSpacing.md,
-              crossAxisSpacing: AppSpacing.md,
-              childAspectRatio: 0.66,
+      // Scroll view (never user-scrollable) so the skeleton clips instead of
+      // overflowing on screens shorter than the full grid.
+      child: SingleChildScrollView(
+        physics: const NeverScrollableScrollPhysics(),
+        child: Column(
+          children: [
+            const ShimmerBox(height: 64, width: double.infinity),
+            const SizedBox(height: AppSpacing.xl),
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: 9,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                mainAxisSpacing: AppSpacing.md,
+                crossAxisSpacing: AppSpacing.md,
+                childAspectRatio: 0.66,
+              ),
+              itemBuilder: (context, i) => const ShimmerBox(
+                height: double.infinity,
+                width: double.infinity,
+                borderRadius: BorderRadius.all(Radius.circular(16)),
+              ),
             ),
-            itemBuilder: (context, i) => const ShimmerBox(
-              height: double.infinity,
-              width: double.infinity,
-              borderRadius: BorderRadius.all(Radius.circular(16)),
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

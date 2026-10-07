@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../core/services/app_update_service.dart';
 import '../core/services/event_queue.dart';
+import '../core/services/shorebird_service.dart';
 import '../presentation/providers/app_language_controller.dart';
 import '../presentation/providers/content_view_model.dart';
 import '../theme/app_colors.dart';
@@ -71,6 +72,7 @@ class _RootShellState extends State<RootShell> {
       EventQueue.instance.flush();
       // Once per app open, same as the rest above — never blocks the UI.
       AppUpdateService.checkAndPrompt(context);
+      ShorebirdService.checkAndDownloadPatch(context);
     });
   }
 

@@ -7,6 +7,7 @@ import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
 import '../widgets/primary_button.dart';
 import 'language_select_screen.dart';
+import 'login_screen.dart';
 import 'root_shell.dart';
 
 /// Second screen shown after the splash — brand intro with a CTA into
@@ -24,9 +25,20 @@ class OnboardingScreen extends StatelessWidget {
     if (!context.mounted) return;
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
-        builder: (_) => hasLanguage ? const RootShell() : const LanguageSelectScreen(),
+        builder: (_) =>
+            hasLanguage ? const RootShell() : const LanguageSelectScreen(),
       ),
     );
+  }
+
+  /// "शुरू करें" opens login / sign up first. Signing in or choosing
+  /// "बिना लॉगिन आगे बढ़ें" continues into the app; backing out stays here.
+  Future<void> _onGetStarted(BuildContext context) async {
+    final result = await Navigator.of(context).push<LoginResult>(
+      MaterialPageRoute(builder: (_) => const LoginScreen(allowSkip: true)),
+    );
+    if (result == null || !context.mounted) return;
+    await _onStart(context);
   }
 
   @override
@@ -50,15 +62,17 @@ class OnboardingScreen extends StatelessWidget {
               Text(
                 'Har Din, Kuch Share Karo',
                 textAlign: TextAlign.center,
-                style: AppTextStyles.body(color: AppColors.textPrimary)
-                    .copyWith(fontWeight: FontWeight.w700),
+                style: AppTextStyles.body(
+                  color: AppColors.textPrimary,
+                ).copyWith(fontWeight: FontWeight.w700),
               ),
               const SizedBox(height: AppSpacing.sm),
               Text(
                 'अपने विचार, शुभकामनाएं और खास पल सभी के साथ शेयर करें',
                 textAlign: TextAlign.center,
-                style: AppTextStyles.secondary(color: AppColors.textPrimary)
-                    .copyWith(fontWeight: FontWeight.w700),
+                style: AppTextStyles.secondary(
+                  color: AppColors.textPrimary,
+                ).copyWith(fontWeight: FontWeight.w700),
               ),
               const SizedBox(height: AppSpacing.xxl),
               Expanded(
@@ -70,7 +84,9 @@ class OnboardingScreen extends StatelessWidget {
                     width: double.infinity,
                     decoration: BoxDecoration(
                       color: AppColors.lightAccent,
-                      borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
+                      borderRadius: BorderRadius.circular(
+                        AppSpacing.cardRadius,
+                      ),
                     ),
                     child: const Icon(
                       AppIcons.sun,
@@ -83,9 +99,8 @@ class OnboardingScreen extends StatelessWidget {
               const SizedBox(height: AppSpacing.xxl),
               PrimaryButton(
                 label: 'शुरू करें',
-                onPressed: () => _onStart(context),
+                onPressed: () => _onGetStarted(context),
               ),
-              // Login link intentionally removed — v1 has no accounts (§5).
             ],
           ),
         ),

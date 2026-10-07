@@ -73,7 +73,7 @@ class CustomDesignScreen extends StatefulWidget {
 }
 
 class _CustomDesignScreenState extends State<CustomDesignScreen>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   final SpeechToText _speech = SpeechToText();
   final FlutterTts _tts = FlutterTts();
   final TextEditingController _textController = TextEditingController();

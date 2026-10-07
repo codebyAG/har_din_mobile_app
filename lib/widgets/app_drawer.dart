@@ -7,6 +7,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_icons.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
+import '../screens/premium_screen.dart';
 import '../screens/quote_maker_screen.dart';
 import '../screens/settings_screen.dart';
 import 'festive_glow.dart';
@@ -78,6 +79,12 @@ class AppDrawer extends StatelessWidget {
                   label: 'टेक्स्ट स्टेटस बनाएं',
                   onTap: () => _push(context, const QuoteMakerScreen()),
                 ),
+                _DrawerTile(
+                  icon: AppIcons.premium,
+                  gradient: const [AppColors.secondary, AppColors.primary],
+                  label: 'HarDin Premium',
+                  onTap: () => _push(context, const PremiumScreen()),
+                ),
                 // Feed is unreachable in v1 — no posts, no comments, no users (§5).
                 const SizedBox(height: AppSpacing.lg),
                 const _SectionLabel('और'),
@@ -96,7 +103,8 @@ class AppDrawer extends StatelessWidget {
                     Navigator.of(context).pop();
                     SharePlus.instance.share(
                       ShareParams(
-                        text: 'हर दिन ऐप डाउनलोड करो — हर त्योहार के लिए खूबसूरत स्टेटस, '
+                        text:
+                            'हर दिन ऐप डाउनलोड करो — हर त्योहार के लिए खूबसूरत स्टेटस, '
                             'कोट्स और शुभकामनाएं। Har Din, Kuch Share Karo!',
                       ),
                     );
@@ -112,7 +120,11 @@ class AppDrawer extends StatelessWidget {
             ),
             child: Row(
               children: [
-                const Icon(AppIcons.celebration, size: 13, color: AppColors.textSecondary),
+                const Icon(
+                  AppIcons.celebration,
+                  size: 13,
+                  color: AppColors.textSecondary,
+                ),
                 const SizedBox(width: AppSpacing.xs),
                 Text('हर दिन · v1.0.0', style: AppTextStyles.secondary()),
               ],
@@ -139,7 +151,11 @@ class _DrawerHeader extends StatelessWidget {
         ),
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [AppColors.secondary, AppColors.primary, AppColors.primaryDark],
+            colors: [
+              AppColors.secondary,
+              AppColors.primary,
+              AppColors.primaryDark,
+            ],
             stops: [0.0, 0.5, 1.0],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -173,14 +189,21 @@ class _DrawerHeader extends StatelessWidget {
                         ),
                       ],
                     ),
-                    child: Image.asset('assets/har_din_app_logo_transparent.png'),
+                    child: Image.asset(
+                      'assets/har_din_app_logo_transparent.png',
+                    ),
                   ),
                   const SizedBox(height: AppSpacing.md),
-                  Text('हर दिन', style: AppTextStyles.screenTitle(color: Colors.white)),
+                  Text(
+                    'हर दिन',
+                    style: AppTextStyles.screenTitle(color: Colors.white),
+                  ),
                   const SizedBox(height: 2),
                   Text(
                     'Har Din, Kuch Share Karo',
-                    style: AppTextStyles.secondary(color: Colors.white.withValues(alpha: 0.9)),
+                    style: AppTextStyles.secondary(
+                      color: Colors.white.withValues(alpha: 0.9),
+                    ),
                   ),
                 ],
               ),
@@ -285,7 +308,9 @@ class _DrawerTile extends StatelessWidget {
                 Expanded(
                   child: Text(
                     label,
-                    style: AppTextStyles.body().copyWith(fontWeight: FontWeight.w500),
+                    style: AppTextStyles.body().copyWith(
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
               ],

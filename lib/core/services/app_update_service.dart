@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:in_app_update/in_app_update.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -21,6 +22,12 @@ import 'package:url_launcher/url_launcher.dart';
 class AppUpdateService {
   AppUpdateService._();
 
+  /// Play Console in-app update priority (0–5, set per release through the
+  /// Play Developer API) at or above which the update is *forced*: a
+  /// full-screen immediate update the user cannot skip. Lower priorities
+  /// get the flexible background update.
+  static const int _forceUpdatePriority = 4;
+
   static Future<void> checkAndPrompt(BuildContext context) async {
     try {
       if (Platform.isAndroid) {
@@ -36,6 +43,13 @@ class AppUpdateService {
   static Future<void> _checkAndroid(BuildContext context) async {
     final info = await InAppUpdate.checkForUpdate();
     if (info.updateAvailability != UpdateAvailability.updateAvailable) return;
+
+    if (info.immediateUpdateAllowed &&
+        info.updatePriority >= _forceUpdatePriority) {
+      if (!context.mounted) return;
+      await _forceImmediateUpdate(context);
+      return;
+    }
 
     if (info.flexibleUpdateAllowed) {
       // Downloads in the background; the user keeps using the app and
@@ -60,13 +74,56 @@ class AppUpdateService {
     }
   }
 
+  /// Force update: the native immediate flow blocks the app until it
+  /// finishes. If the user backs out or it fails, they get a
+  /// non-dismissible prompt — retry, or close the app. There is no way
+  /// to keep using an outdated build.
+  static Future<void> _forceImmediateUpdate(BuildContext context) async {
+    while (true) {
+      final result = await InAppUpdate.performImmediateUpdate();
+      if (result == AppUpdateResult.success) return; // app restarts itself
+      if (!context.mounted) return;
+
+      final retry = await showDialog<bool>(
+        context: context,
+        barrierDismissible: false,
+        builder: (dialogContext) => PopScope(
+          canPop: false,
+          child: AlertDialog(
+            title: const Text('अपडेट ज़रूरी है'),
+            content: const Text(
+              'ऐप इस्तेमाल करने के लिए हर दिन का नया वर्ज़न इंस्टॉल करना ज़रूरी है।',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(false),
+                child: const Text('ऐप बंद करें'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.of(dialogContext).pop(true),
+                child: const Text('अभी अपडेट करें'),
+              ),
+            ],
+          ),
+        ),
+      );
+      if (retry != true) {
+        await SystemNavigator.pop();
+        return;
+      }
+    }
+  }
+
   static Future<void> _checkIOS(BuildContext context) async {
     final packageInfo = await PackageInfo.fromPlatform();
     final dio = Dio();
     final res = await dio.get<Map<String, dynamic>>(
       'https://itunes.apple.com/lookup',
       queryParameters: {'bundleId': packageInfo.packageName},
-      options: Options(sendTimeout: const Duration(seconds: 8), receiveTimeout: const Duration(seconds: 8)),
+      options: Options(
+        sendTimeout: const Duration(seconds: 8),
+        receiveTimeout: const Duration(seconds: 8),
+      ),
     );
     final results = res.data?['results'] as List<dynamic>?;
     if (results == null || results.isEmpty) return; // not on the App Store yet

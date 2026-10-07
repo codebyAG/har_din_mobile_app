@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
+import '../widgets/auth_widgets.dart';
 import 'onboarding_screen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -15,6 +16,17 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen> {
   Timer? _timer;
+  bool _precached = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Decode the login / sign up artwork while the splash is showing, so
+    // that screen opens with no image pop-in.
+    if (_precached) return;
+    _precached = true;
+    AuthBackground.precache(context);
+  }
 
   @override
   void initState() {
@@ -39,10 +51,7 @@ class _SplashScreenState extends State<SplashScreen> {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          Image.asset(
-            'assets/hardin_splash_bg.png',
-            fit: BoxFit.cover,
-          ),
+          Image.asset('assets/hardin_splash_bg.png', fit: BoxFit.cover),
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.symmetric(

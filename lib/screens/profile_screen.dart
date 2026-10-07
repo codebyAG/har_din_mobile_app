@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../presentation/providers/auth_controller.dart';
 import '../presentation/providers/saved_designs_controller.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_icons.dart';
@@ -9,6 +10,7 @@ import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
 import '../widgets/festive_glow.dart';
 import '../widgets/glass_container.dart';
+import 'login_screen.dart';
 import 'saved_screen.dart';
 import 'settings_screen.dart';
 
@@ -18,6 +20,7 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final saved = context.watch<SavedDesignsController>();
+    final auth = context.watch<AuthController>();
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -96,6 +99,18 @@ class ProfileScreen extends StatelessWidget {
                           'कोट्स और शुभकामनाएं। Har Din, Kuch Share Karo!',
                     ),
                   ),
+                ),
+                _ProfileMenuTile(
+                  icon: auth.isLoggedIn ? AppIcons.profile : AppIcons.profileSolid,
+                  gradient: const [Color(0xFF6FA8E8), Color(0xFF3D6FC2)],
+                  label: auth.isLoggedIn
+                      ? 'लॉगआउट (${auth.session!.name.isEmpty ? auth.session!.phone : auth.session!.name})'
+                      : 'लॉगिन / साइन अप',
+                  onTap: () => auth.isLoggedIn
+                      ? auth.logout()
+                      : Navigator.of(context).push<bool>(
+                          MaterialPageRoute(builder: (_) => const LoginScreen()),
+                        ),
                 ),
                 const SizedBox(height: AppSpacing.xl),
                 Center(
