@@ -26,7 +26,11 @@ class ProfileScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: ListView(
-        padding: const EdgeInsets.only(bottom: AppSpacing.xxl),
+        // The floating nav pill (66 + 16 gap + system inset) overlays the
+        // body (extendBody), so the last menu item must scroll above it.
+        padding: EdgeInsets.only(
+          bottom: 66 + 16 + MediaQuery.viewPaddingOf(context).bottom + AppSpacing.xl,
+        ),
         children: [
           Stack(
             clipBehavior: Clip.none,
