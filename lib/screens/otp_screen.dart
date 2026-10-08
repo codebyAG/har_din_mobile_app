@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../core/constants/api_constants.dart';
 import '../presentation/providers/auth_controller.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
@@ -10,7 +11,8 @@ import '../theme/app_text_styles.dart';
 import '../widgets/auth_widgets.dart';
 import '../widgets/primary_button.dart';
 
-/// Second step of auth: the 6-digit OTP texted to [phone].
+/// Second step of auth: the OTP ([ApiConstants.otpLength] digits) texted to
+/// [phone].
 ///
 /// Pops `is_new_user` (true / false) once the code is verified and the
 /// session is stored; backing out pops `null`.
@@ -89,8 +91,8 @@ class _OtpScreenState extends State<OtpScreen> {
   Future<void> _verify() async {
     if (_busy || _locked) return;
     final otp = _otpController.text.trim();
-    if (otp.length != 6) {
-      setState(() => _error = '6 अंकों का OTP डालें।');
+    if (otp.length != ApiConstants.otpLength) {
+      setState(() => _error = '${ApiConstants.otpLength} अंकों का OTP डालें।');
       return;
     }
     setState(() {
@@ -171,7 +173,8 @@ class _OtpScreenState extends State<OtpScreen> {
   Widget build(BuildContext context) {
     return AuthPage(
       title: 'OTP डालें',
-      subtitle: '+91 ${widget.phone} पर भेजा गया 6 अंकों का कोड डालें',
+      subtitle:
+          '+91 ${widget.phone} पर भेजा गया ${ApiConstants.otpLength} अंकों का कोड डालें',
       children: [
         if (_locked)
           _LockedNotice(
@@ -181,6 +184,7 @@ class _OtpScreenState extends State<OtpScreen> {
         else ...[
           OtpInput(
             controller: _otpController,
+            length: ApiConstants.otpLength,
             enabled: !_busy,
             onCompleted: _verify,
           ),

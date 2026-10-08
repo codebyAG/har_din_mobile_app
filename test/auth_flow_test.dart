@@ -136,8 +136,8 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 600));
 
-    // Six digits auto-verify.
-    await tester.enterText(find.byType(TextField).last, '123456');
+    // All OTP digits entered -> auto-verify.
+    await tester.enterText(find.byType(TextField).last, '1234');
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 800));
 
@@ -163,7 +163,7 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 600));
 
-    await tester.enterText(find.byType(TextField).last, '123456');
+    await tester.enterText(find.byType(TextField).last, '1234');
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 600));
 
