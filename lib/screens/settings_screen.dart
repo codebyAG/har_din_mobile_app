@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -51,7 +53,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ? Text(subtitles[option]!, style: AppTextStyles.secondary())
                     : null,
                 trailing: option == current
-                    ? const Icon(AppIcons.free, color: AppColors.primary, size: 18)
+                    ? const Icon(
+                        AppIcons.free,
+                        color: AppColors.primary,
+                        size: 18,
+                      )
                     : null,
                 onTap: () => Navigator.of(sheetContext).pop(option),
               ),
@@ -63,8 +69,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   void _snack(String message) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
@@ -92,7 +99,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 borderRadius: BorderRadius.circular(11),
               ),
-              child: const Icon(AppIcons.settingsGear, size: 16, color: Colors.white),
+              child: const Icon(
+                AppIcons.settingsGear,
+                size: 16,
+                color: Colors.white,
+              ),
             ),
             const SizedBox(width: AppSpacing.sm),
             Text('सेटिंग', style: AppTextStyles.screenTitle()),
@@ -136,6 +147,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 label: 'लॉगआउट',
                 onTap: () => logoutWithConfirm(context),
               ),
+            if (auth.isLoggedIn)
+              _SettingsTile(
+                icon: Icons.devices_outlined,
+                gradient: const [Color(0xFFB09B8C), Color(0xFF6E6153)],
+                label: 'सभी डिवाइस से लॉगआउट',
+                onTap: () => logoutEverywhereWithConfirm(context),
+              ),
             const SizedBox(height: AppSpacing.lg),
             const _SectionLabel('प्राथमिकताएं'),
             const SizedBox(height: AppSpacing.sm),
@@ -147,6 +165,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 final options = payload != null && payload.languages.isNotEmpty
                     ? {for (final l in payload.languages) l.label: l.code}
                     : const {'हिन्दी': 'hi', 'English': 'en', 'मराठी': 'mr'};
+                // Latin-script second line (`label_en`) for every row, so a user
+                // who can't read a script can still identify it. The offline
+                // fallback carries both fields too.
+                final subtitles =
+                    payload != null && payload.languages.isNotEmpty
+                    ? {for (final l in payload.languages) l.label: l.labelEn}
+                    : const {
+                        'हिन्दी': 'Hindi',
+                        'English': 'English',
+                        'मराठी': 'Marathi',
+                      };
                 final currentLabel = options.entries
                     .firstWhere(
                       (e) => e.value == languageController.code,
@@ -162,13 +191,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     'भाषा चुनें',
                     options.keys.toList(),
                     currentLabel,
+                    subtitles: subtitles,
                     (label) async {
                       final code = options[label]!;
                       await languageController.setLanguageCode(code);
                       if (!context.mounted) return;
-                      await context
-                          .read<ContentViewModel>()
-                          .load(code, forceLanguageSwitch: true);
+                      // Keep the account's language in step (no-op if signed out).
+                      unawaited(
+                        context.read<AuthController>().syncLanguage(code),
+                      );
+                      await context.read<ContentViewModel>().load(
+                        code,
+                        forceLanguageSwitch: true,
+                      );
                     },
                   ),
                 );
@@ -311,14 +346,20 @@ class _SettingsTile extends StatelessWidget {
                 Expanded(
                   child: Text(
                     label,
-                    style: AppTextStyles.body().copyWith(fontWeight: FontWeight.w500),
+                    style: AppTextStyles.body().copyWith(
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
                 if (value != null) ...[
                   Text(value!, style: AppTextStyles.secondary()),
                   const SizedBox(width: AppSpacing.xs),
                 ],
-                const Icon(AppIcons.chevronRight, size: 14, color: AppColors.textSecondary),
+                const Icon(
+                  AppIcons.chevronRight,
+                  size: 14,
+                  color: AppColors.textSecondary,
+                ),
               ],
             ),
           ),

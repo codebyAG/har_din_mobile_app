@@ -25,3 +25,21 @@ class ApiRateLimitedException extends ApiException {
 class ApiBadRequestException extends ApiException {
   ApiBadRequestException(String body) : super('400 — malformed request: $body', statusCode: 400);
 }
+
+/// A failed `/v1/auth/*` call, carrying what the server said: its `error`
+/// text and, on a 429, how long until the next attempt will be accepted.
+/// [statusCode] is null for a network error / timeout.
+class AuthApiException extends ApiException {
+  final String? serverMessage;
+  final int? retryAfterSec;
+
+  AuthApiException({
+    required int? statusCode,
+    this.serverMessage,
+    this.retryAfterSec,
+  }) : super(
+         'auth ${statusCode ?? 'network error'}'
+         '${serverMessage != null ? ': $serverMessage' : ''}',
+         statusCode: statusCode,
+       );
+}

@@ -4,64 +4,139 @@ import '../../../core/constants/api_constants.dart';
 import '../../../core/error/api_exceptions.dart';
 import '../../../domain/entities/auth_session.dart';
 
-/// Phone-number + OTP auth against api-hardin. One flow for everyone:
-/// the backend decides whether the number is an existing account (log in)
-/// or a new one (sign up).
+/// Result of `otp/send` and `otp/resend`: the code is on its way, and a
+/// resend will be accepted after [retryAfterSec] seconds.
+class OtpSent {
+  final int retryAfterSec;
+  const OtpSent(this.retryAfterSec);
+}
+
+/// How a resend is delivered.
+enum OtpChannel { text, voice }
+
+/// Phone + OTP auth, per APP-CHANGES-02 §2 (live contract:
+/// `https://api-hardin.vocadose.com/docs`). MSG91 generates, delivers and
+/// verifies the code — the backend, and this client, never see it again.
 ///
-/// ASSUMED CONTRACT — the backend docs (HAR-DIN-INTEGRATION.md) define no
-/// auth endpoints yet, so these paths and bodies are a proposal. Change
-/// them here, in one place, once the real API exists:
+/// Deliberately its **own** Dio, separate from [HarDinApiClient]: the
+/// content / version / languages / events endpoints must never carry an
+/// `Authorization` header (it would make them uncacheable at the edge).
+/// Only `/v1/auth/me` gets a bearer token, passed per call.
 ///
-///   POST /v1/auth/otp/send    {phone}
-///        -> 200 {exists: bool}   OTP is texted either way; `exists` says
-///                                whether this number already has an account
-///   POST /v1/auth/otp/verify  {phone, otp}
-///        -> 200 {token, user: {name, phone}}
-///                                creates the account if the number is new
-///
-/// 400 = bad number/OTP, 429 = too many attempts.
+/// Every failure surfaces as an [AuthApiException] with the status code,
+/// the server's `error` text and (on 429) `retry_after_sec`.
 class AuthApiClient {
   AuthApiClient() : _dio = Dio(BaseOptions(baseUrl: ApiConstants.baseUrl));
 
   final Dio _dio;
 
-  /// Texts an OTP to [phone]. Returns whether the number already has an
-  /// account.
-  Future<bool> sendOtp(String phone) async {
-    final data = await _post('/v1/auth/otp/send', {'phone': phone});
-    return (data as Map<String, dynamic>)['exists'] as bool;
+  static const _timeout = Duration(seconds: 15);
+
+  Future<OtpSent> sendOtp(String phone) async {
+    final data = await _request('POST', '/v1/auth/otp/send', {'phone': phone});
+    return OtpSent((data as Map<String, dynamic>)['retry_after_sec'] as int);
   }
 
-  Future<AuthSession> verifyOtp({
+  Future<OtpSent> resendOtp(
+    String phone, {
+    OtpChannel channel = OtpChannel.text,
+  }) async {
+    final data = await _request('POST', '/v1/auth/otp/resend', {
+      'phone': phone,
+      'channel': channel.name,
+    });
+    return OtpSent((data as Map<String, dynamic>)['retry_after_sec'] as int);
+  }
+
+  Future<VerifyResult> verifyOtp({
     required String phone,
     required String otp,
+    String? deviceId,
   }) async {
-    final data = await _post('/v1/auth/otp/verify', {
-      'phone': phone,
-      'otp': otp,
-    });
-    return AuthSession.fromJson(data as Map<String, dynamic>);
+    final data =
+        await _request('POST', '/v1/auth/otp/verify', {
+              'phone': phone,
+              'otp': otp,
+              'device_id': ?deviceId,
+            })
+            as Map<String, dynamic>;
+    return VerifyResult(
+      isNewUser: data['is_new_user'] as bool,
+      session: AuthSession(
+        user: AuthUser.fromJson(data['user'] as Map<String, dynamic>),
+        tokens: AuthTokens.fromJson(data['tokens'] as Map<String, dynamic>),
+      ),
+    );
   }
 
-  Future<dynamic> _post(String path, Map<String, dynamic> body) async {
+  /// Rotates the pair. The old refresh token (and access token) stop
+  /// working the instant this returns, so the caller must persist the
+  /// result before making another request.
+  Future<AuthSession> refresh(String refreshToken) async {
+    final data =
+        await _request('POST', '/v1/auth/refresh', {
+              'refresh_token': refreshToken,
+            })
+            as Map<String, dynamic>;
+    return AuthSession(
+      user: AuthUser.fromJson(data['user'] as Map<String, dynamic>),
+      tokens: AuthTokens.fromJson(data['tokens'] as Map<String, dynamic>),
+    );
+  }
+
+  /// Signs out this device. Idempotent on the server (204 even for an
+  /// unknown token).
+  Future<void> logout(String refreshToken) =>
+      _request('POST', '/v1/auth/logout', {'refresh_token': refreshToken});
+
+  Future<AuthUser> me(String accessToken) async => AuthUser.fromJson(
+    await _request('GET', '/v1/auth/me', null, accessToken: accessToken)
+        as Map<String, dynamic>,
+  );
+
+  /// Both fields are optional, but sending neither is a 400.
+  Future<AuthUser> updateProfile(
+    String accessToken, {
+    String? name,
+    String? language,
+  }) async => AuthUser.fromJson(
+    await _request('PATCH', '/v1/auth/me', {
+          'name': ?name,
+          'language': ?language,
+        }, accessToken: accessToken)
+        as Map<String, dynamic>,
+  );
+
+  /// Signs out every device and deletes the session server-side.
+  Future<void> deleteAccountSessions(String accessToken) =>
+      _request('DELETE', '/v1/auth/me', null, accessToken: accessToken);
+
+  Future<dynamic> _request(
+    String method,
+    String path,
+    Map<String, dynamic>? body, {
+    String? accessToken,
+  }) async {
     try {
-      final res = await _dio.post<dynamic>(
+      final res = await _dio.request<dynamic>(
         path,
         data: body,
         options: Options(
-          sendTimeout: const Duration(seconds: 15),
-          receiveTimeout: const Duration(seconds: 15),
+          method: method,
+          sendTimeout: _timeout,
+          receiveTimeout: _timeout,
+          headers: accessToken == null
+              ? null
+              : {'Authorization': 'Bearer $accessToken'},
         ),
       );
       return res.data;
     } on DioException catch (e) {
-      final status = e.response?.statusCode;
-      if (status == 404) throw ApiNotFoundException();
-      if (status == 429) throw ApiRateLimitedException();
-      if (status == 400) throw ApiBadRequestException('${e.response?.data}');
-      throw ApiException(
-        status != null ? 'HTTP $status' : e.message ?? 'network error',
-        statusCode: status,
+      final data = e.response?.data;
+      throw AuthApiException(
+        statusCode: e.response?.statusCode,
+        serverMessage: data is Map ? data['error'] as String? : null,
+        retryAfterSec: data is Map ? data['retry_after_sec'] as int? : null,
       );
     }
   }

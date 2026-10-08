@@ -6,11 +6,13 @@ import '../core/services/app_update_service.dart';
 import '../core/services/event_queue.dart';
 import '../core/services/shorebird_service.dart';
 import '../presentation/providers/app_language_controller.dart';
+import '../presentation/providers/auth_controller.dart';
 import '../presentation/providers/content_view_model.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_icons.dart';
 import '../theme/app_text_styles.dart';
 import '../widgets/app_drawer.dart';
+import 'auth_screen.dart';
 import 'festivals_screen.dart';
 import 'home_screen.dart';
 import 'language_select_screen.dart';
@@ -81,19 +83,27 @@ class _RootShellState extends State<RootShell> {
   }
 
   List<_TabSpec> _tabs(ContentViewModel viewModel) => [
-        (icon: AppIcons.home, activeIcon: AppIcons.homeSolid, label: viewModel.t('nav.home')),
-        (
-          icon: AppIcons.festivals,
-          activeIcon: AppIcons.festivalsSolid,
-          label: viewModel.t('nav.festivals'),
-        ),
-        (icon: AppIcons.saved, activeIcon: AppIcons.savedSolid, label: viewModel.t('nav.creations')),
-        (
-          icon: AppIcons.profile,
-          activeIcon: AppIcons.profileSolid,
-          label: viewModel.t('nav.profile'),
-        ),
-      ];
+    (
+      icon: AppIcons.home,
+      activeIcon: AppIcons.homeSolid,
+      label: viewModel.t('nav.home'),
+    ),
+    (
+      icon: AppIcons.festivals,
+      activeIcon: AppIcons.festivalsSolid,
+      label: viewModel.t('nav.festivals'),
+    ),
+    (
+      icon: AppIcons.saved,
+      activeIcon: AppIcons.savedSolid,
+      label: viewModel.t('nav.creations'),
+    ),
+    (
+      icon: AppIcons.profile,
+      activeIcon: AppIcons.profileSolid,
+      label: viewModel.t('nav.profile'),
+    ),
+  ];
 
   @override
   void didChangeDependencies() {
@@ -107,6 +117,8 @@ class _RootShellState extends State<RootShell> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       context.read<ContentViewModel>().load(code);
+      // Signed-in users: keep the account's language in step (silent).
+      context.read<AuthController>().syncLanguage(code);
       EventQueue.instance.record(HarDinEventType.appOpen);
       // "Next app open" flush trigger (§8, APP-CHANGES-01 §4) — whatever
       // the last session left queued goes out now, not just at 20 events.
@@ -129,6 +141,28 @@ class _RootShellState extends State<RootShell> {
         if (!mounted) return;
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (_) => const LanguageSelectScreen()),
+        );
+      });
+    }
+
+    // The server rejected the refresh token (revoked / expired): the user
+    // was signed out without asking — send them back to the phone screen.
+    final auth = context.watch<AuthController>();
+    if (auth.forcedLogout) {
+      auth.acknowledgeForcedLogout();
+      final navigator = Navigator.of(context);
+      final messenger = ScaffoldMessenger.of(context);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        navigator.pushAndRemoveUntil(
+          MaterialPageRoute(
+            builder: (_) => const AuthScreen(allowSkip: true, isRoot: true),
+          ),
+          (_) => false,
+        );
+        messenger.showSnackBar(
+          const SnackBar(
+            content: Text('आपका सेशन खत्म हो गया है। फिर से लॉगिन करें।'),
+          ),
         );
       });
     }
@@ -219,7 +253,11 @@ class _NavTab extends StatelessWidget {
   final bool selected;
   final VoidCallback onTap;
 
-  const _NavTab({required this.tab, required this.selected, required this.onTap});
+  const _NavTab({
+    required this.tab,
+    required this.selected,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -272,7 +310,10 @@ class _NavTab extends StatelessWidget {
                             maxLines: 1,
                             softWrap: false,
                             style: AppTextStyles.bottomNav(color: Colors.white)
-                                .copyWith(fontWeight: FontWeight.w700, fontSize: 11.5),
+                                .copyWith(
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 11.5,
+                                ),
                           ),
                         )
                       : const SizedBox(height: 19),

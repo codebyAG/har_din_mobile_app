@@ -6,26 +6,19 @@ import '../screens/auth_screen.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 
-/// Asks "लॉगआउट करें?" and, on yes, signs the user out and sends them back
-/// to the login screen (clearing the back stack). Returns true if they
-/// were logged out.
-Future<bool> logoutWithConfirm(BuildContext context) async {
-  // Grab these before any await — the calling screen is about to be
-  // removed from the tree.
-  final navigator = Navigator.of(context, rootNavigator: true);
-  final messenger = ScaffoldMessenger.of(context);
-  final auth = context.read<AuthController>();
+Future<bool> _confirm(
+  BuildContext context, {
+  required String title,
+  required String body,
+  required String confirmLabel,
+}) async {
   final confirmed = await showDialog<bool>(
     context: context,
     builder: (dialogContext) => AlertDialog(
       backgroundColor: AppColors.card,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      title: Text('लॉगआउट करें?', style: AppTextStyles.sectionHeading()),
-      content: Text(
-        'क्या आप सच में लॉगआउट करना चाहते हैं? आप कभी भी अपने मोबाइल नंबर '
-        'से दोबारा लॉगिन कर सकते हैं।',
-        style: AppTextStyles.body(),
-      ),
+      title: Text(title, style: AppTextStyles.sectionHeading()),
+      content: Text(body, style: AppTextStyles.body()),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(dialogContext).pop(false),
@@ -37,14 +30,17 @@ Future<bool> logoutWithConfirm(BuildContext context) async {
         FilledButton(
           onPressed: () => Navigator.of(dialogContext).pop(true),
           style: FilledButton.styleFrom(backgroundColor: AppColors.like),
-          child: Text('लॉगआउट', style: AppTextStyles.button()),
+          child: Text(confirmLabel, style: AppTextStyles.button()),
         ),
       ],
     ),
   );
-  if (confirmed != true) return false;
+  return confirmed == true;
+}
 
-  await auth.logout();
+/// Clears the back stack and shows the login screen as the app's only
+/// route; finishing it (or skipping) lands on a fresh Home.
+void _goToLogin(NavigatorState navigator, ScaffoldMessengerState messenger) {
   navigator.pushAndRemoveUntil(
     MaterialPageRoute(
       builder: (_) => const AuthScreen(allowSkip: true, isRoot: true),
@@ -54,5 +50,59 @@ Future<bool> logoutWithConfirm(BuildContext context) async {
   messenger
     ..hideCurrentSnackBar()
     ..showSnackBar(const SnackBar(content: Text('आप लॉगआउट हो गए हैं')));
+}
+
+/// Asks "लॉगआउट करें?" and, on yes, signs this device out and sends the
+/// user back to the login screen (clearing the back stack). Returns true
+/// if they were logged out.
+Future<bool> logoutWithConfirm(BuildContext context) async {
+  // Grab these before any await — the calling screen is about to be
+  // removed from the tree.
+  final navigator = Navigator.of(context, rootNavigator: true);
+  final messenger = ScaffoldMessenger.of(context);
+  final auth = context.read<AuthController>();
+
+  final confirmed = await _confirm(
+    context,
+    title: 'लॉगआउट करें?',
+    body:
+        'क्या आप सच में लॉगआउट करना चाहते हैं? आप कभी भी अपने मोबाइल नंबर '
+        'से दोबारा लॉगिन कर सकते हैं।',
+    confirmLabel: 'लॉगआउट',
+  );
+  if (!confirmed) return false;
+
+  await auth.logout();
+  _goToLogin(navigator, messenger);
+  return true;
+}
+
+/// "सभी डिवाइस से लॉगआउट": signs out every phone this number is logged
+/// in on (`DELETE /v1/auth/me`). Unlike a normal logout this needs the
+/// server, so on failure the user stays signed in and is told why.
+Future<bool> logoutEverywhereWithConfirm(BuildContext context) async {
+  final navigator = Navigator.of(context, rootNavigator: true);
+  final messenger = ScaffoldMessenger.of(context);
+  final auth = context.read<AuthController>();
+
+  final confirmed = await _confirm(
+    context,
+    title: 'सभी डिवाइस से लॉगआउट करें?',
+    body:
+        'इस नंबर से लॉगिन किए हुए सभी फ़ोन लॉगआउट हो जाएंगे। आप कभी भी '
+        'दोबारा लॉगिन कर सकते हैं।',
+    confirmLabel: 'सभी से लॉगआउट',
+  );
+  if (!confirmed) return false;
+
+  try {
+    await auth.logoutEverywhere();
+  } on AuthFailure catch (failure) {
+    messenger
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(failure.message)));
+    return false;
+  }
+  _goToLogin(navigator, messenger);
   return true;
 }

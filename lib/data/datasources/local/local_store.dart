@@ -5,7 +5,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 
-import '../../../domain/entities/auth_session.dart';
 import '../../../domain/entities/content_entities.dart';
 
 /// Everything the caching contract (§4) needs to remember between app
@@ -21,9 +20,6 @@ class LocalStore {
 
   static const _kLanguage = 'har_din.language';
   static const _kDeviceId = 'har_din.device_id';
-  static const _kAuthToken = 'har_din.auth_token';
-  static const _kAuthName = 'har_din.auth_name';
-  static const _kAuthPhone = 'har_din.auth_phone';
 
   Future<SharedPreferences> get _prefs async => SharedPreferences.getInstance();
 
@@ -78,33 +74,6 @@ class LocalStore {
     final id = const Uuid().v4();
     await prefs.setString(_kDeviceId, id);
     return id;
-  }
-
-  // --- account session (login / sign up) ---
-
-  Future<AuthSession?> readSession() async {
-    final prefs = await _prefs;
-    final token = prefs.getString(_kAuthToken);
-    if (token == null) return null;
-    return AuthSession(
-      token: token,
-      name: prefs.getString(_kAuthName) ?? '',
-      phone: prefs.getString(_kAuthPhone) ?? '',
-    );
-  }
-
-  Future<void> writeSession(AuthSession session) async {
-    final prefs = await _prefs;
-    await prefs.setString(_kAuthToken, session.token);
-    await prefs.setString(_kAuthName, session.name);
-    await prefs.setString(_kAuthPhone, session.phone);
-  }
-
-  Future<void> clearSession() async {
-    final prefs = await _prefs;
-    await prefs.remove(_kAuthToken);
-    await prefs.remove(_kAuthName);
-    await prefs.remove(_kAuthPhone);
   }
 
   // --- content payload — one file per language ---

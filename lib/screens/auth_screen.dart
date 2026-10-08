@@ -1,12 +1,17 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
+import '../core/utils/phone_utils.dart';
+import '../presentation/providers/app_language_controller.dart';
 import '../presentation/providers/auth_controller.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
 import '../widgets/auth_widgets.dart';
+import '../widgets/name_prompt.dart';
 import '../widgets/primary_button.dart';
 import 'otp_screen.dart';
 import 'root_shell.dart';
@@ -15,8 +20,9 @@ import 'root_shell.dart';
 enum AuthResult { signedIn, skipped }
 
 /// The one entry point for login *and* sign up: the user types only a
-/// mobile number and is taken to the OTP screen. The backend decides
-/// whether that number is an existing account or a new one.
+/// mobile number and is taken to the OTP screen. There is no separate
+/// signup call — the backend creates the account on the first successful
+/// verification, and `is_new_user` decides whether to ask for a name.
 ///
 /// Pops [AuthResult.signedIn] once the user is in, [AuthResult.skipped]
 /// via the optional skip link, or `null` when backing out — the app works
@@ -63,7 +69,7 @@ class _AuthScreenState extends State<AuthScreen> {
   }
 
   Future<void> _sendOtp() async {
-    if (!AuthController.offlineDemoAuth && !_phoneRe.hasMatch(_phone)) {
+    if (!_phoneRe.hasMatch(_phone)) {
       setState(() => _error = '10 अंकों का सही मोबाइल नंबर डालें।');
       return;
     }
@@ -71,24 +77,49 @@ class _AuthScreenState extends State<AuthScreen> {
       _busy = true;
       _error = null;
     });
-    final result = await context.read<AuthController>().sendOtp(_phone);
-    if (!mounted) return;
-    if (result.error != null) {
+    final auth = context.read<AuthController>();
+    final OtpSent sent;
+    try {
+      sent = await auth.sendOtp(_phone);
+    } on AuthFailure catch (failure) {
+      if (!mounted) return;
       setState(() {
         _busy = false;
-        _error = result.error;
+        _error = failure.message;
       });
       return;
     }
+    if (!mounted) return;
     setState(() => _busy = false);
-    final signedIn = await Navigator.of(context).push<bool>(
+
+    // Non-null result = the OTP was verified and the user is signed in.
+    final isNewUser = await Navigator.of(context).push<bool>(
       MaterialPageRoute(
         builder: (_) =>
-            OtpScreen(phone: _phone, isNewUser: !(result.exists ?? false)),
+            OtpScreen(phone: _phone, initialRetryAfterSec: sent.retryAfterSec),
       ),
     );
-    if (!mounted) return;
-    if (signedIn == true) _finish(AuthResult.signedIn);
+    if (!mounted || isNewUser == null) return;
+
+    if (isNewUser) {
+      // First run: ask for a name. Dismissing it is fine — the profile
+      // stays incomplete and Profile asks again later.
+      await showNamePrompt(
+        context,
+        onSave: (name) async {
+          try {
+            await auth.saveName(name);
+            return null;
+          } on AuthFailure catch (failure) {
+            return failure.message;
+          }
+        },
+      );
+      if (!mounted) return;
+    }
+    // Tell the server which language this user picked (silent, best effort).
+    unawaited(auth.syncLanguage(context.read<AppLanguageController>().code));
+    _finish(AuthResult.signedIn);
   }
 
   @override
@@ -116,10 +147,20 @@ class _AuthScreenState extends State<AuthScreen> {
           keyboardType: TextInputType.phone,
           textInputAction: TextInputAction.done,
           onSubmitted: (_) => _sendOtp(),
-          inputFormatters: [
-            FilteringTextInputFormatter.digitsOnly,
-            LengthLimitingTextInputFormatter(10),
-          ],
+          // Pasted "+91 98765-43210" / "09876543210" is cleaned, not blocked.
+          inputFormatters: const [IndianPhoneFormatter()],
+          // +91 is drawn, not typed — the server applies the country code.
+          prefix: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text('🇮🇳', style: TextStyle(fontSize: 18)),
+                const SizedBox(width: 6),
+                Text('+91', style: AppTextStyles.body()),
+              ],
+            ),
+          ),
         ),
         if (_error != null) ...[
           const SizedBox(height: AppSpacing.sm),

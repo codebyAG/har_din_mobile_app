@@ -185,6 +185,10 @@ class AuthField extends StatelessWidget {
   final List<TextInputFormatter>? inputFormatters;
   final bool obscureText;
   final Widget? suffix;
+
+  /// Replaces the leading icon (e.g. the fixed "🇮🇳 +91" before a phone
+  /// number — drawn, never typed).
+  final Widget? prefix;
   final ValueChanged<String>? onSubmitted;
 
   const AuthField({
@@ -198,6 +202,7 @@ class AuthField extends StatelessWidget {
     this.inputFormatters,
     this.obscureText = false,
     this.suffix,
+    this.prefix,
     this.onSubmitted,
   });
 
@@ -215,7 +220,8 @@ class AuthField extends StatelessWidget {
       decoration: InputDecoration(
         hintText: hint,
         hintStyle: AppTextStyles.secondary(),
-        prefixIcon: Icon(icon, size: 20, color: AppColors.textSecondary),
+        prefixIcon:
+            prefix ?? Icon(icon, size: 20, color: AppColors.textSecondary),
         suffixIcon: suffix,
         fillColor: Colors.white,
       ),

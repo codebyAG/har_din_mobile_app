@@ -11,6 +11,7 @@ import '../theme/app_text_styles.dart';
 import '../widgets/festive_glow.dart';
 import '../widgets/glass_container.dart';
 import '../widgets/logout_dialog.dart';
+import '../widgets/name_prompt.dart';
 import 'auth_screen.dart';
 import 'saved_screen.dart';
 import 'settings_screen.dart';
@@ -29,7 +30,11 @@ class ProfileScreen extends StatelessWidget {
         // The floating nav pill (66 + 16 gap + system inset) overlays the
         // body (extendBody), so the last menu item must scroll above it.
         padding: EdgeInsets.only(
-          bottom: 66 + 16 + MediaQuery.viewPaddingOf(context).bottom + AppSpacing.xl,
+          bottom:
+              66 +
+              16 +
+              MediaQuery.viewPaddingOf(context).bottom +
+              AppSpacing.xl,
         ),
         children: [
           Stack(
@@ -59,7 +64,9 @@ class ProfileScreen extends StatelessWidget {
           ),
           const SizedBox(height: 38 + AppSpacing.xl),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.screenPadding,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -100,13 +107,33 @@ class ProfileScreen extends StatelessWidget {
                   label: 'ऐप शेयर करें',
                   onTap: () => SharePlus.instance.share(
                     ShareParams(
-                      text: 'हर दिन ऐप डाउनलोड करो — हर त्योहार के लिए खूबसूरत स्टेटस, '
+                      text:
+                          'हर दिन ऐप डाउनलोड करो — हर त्योहार के लिए खूबसूरत स्टेटस, '
                           'कोट्स और शुभकामनाएं। Har Din, Kuch Share Karo!',
                     ),
                   ),
                 ),
+                if (auth.needsName)
+                  _ProfileMenuTile(
+                    icon: AppIcons.edit,
+                    gradient: const [Color(0xFFFFC96B), AppColors.secondary],
+                    label: 'अपना नाम जोड़ें',
+                    onTap: () => showNamePrompt(
+                      context,
+                      onSave: (name) async {
+                        try {
+                          await auth.saveName(name);
+                          return null;
+                        } on AuthFailure catch (failure) {
+                          return failure.message;
+                        }
+                      },
+                    ),
+                  ),
                 _ProfileMenuTile(
-                  icon: auth.isLoggedIn ? AppIcons.profile : AppIcons.profileSolid,
+                  icon: auth.isLoggedIn
+                      ? AppIcons.profile
+                      : AppIcons.profileSolid,
                   gradient: const [Color(0xFF6FA8E8), Color(0xFF3D6FC2)],
                   label: auth.isLoggedIn
                       ? 'लॉगआउट (${auth.session!.name.isEmpty ? auth.session!.phone : auth.session!.name})'
@@ -121,7 +148,9 @@ class ProfileScreen extends StatelessWidget {
                 Center(
                   child: Text(
                     'हर दिन · v1.0.0',
-                    style: AppTextStyles.secondary().copyWith(letterSpacing: 0.2),
+                    style: AppTextStyles.secondary().copyWith(
+                      letterSpacing: 0.2,
+                    ),
                   ),
                 ),
               ],
@@ -155,7 +184,11 @@ class _ProfileHeader extends StatelessWidget {
         ),
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [AppColors.secondary, AppColors.primary, AppColors.primaryDark],
+            colors: [
+              AppColors.secondary,
+              AppColors.primary,
+              AppColors.primaryDark,
+            ],
             stops: [0.0, 0.45, 1.0],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -190,10 +223,16 @@ class _ProfileHeader extends StatelessWidget {
                             tint: Colors.white,
                             tintOpacity: 0.18,
                             blur: 12,
-                            border: Border.all(color: Colors.white.withValues(alpha: 0.35)),
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.35),
+                            ),
                             child: const Padding(
                               padding: EdgeInsets.all(AppSpacing.sm),
-                              child: Icon(AppIcons.settingsGear, color: Colors.white, size: 18),
+                              child: Icon(
+                                AppIcons.settingsGear,
+                                color: Colors.white,
+                                size: 18,
+                              ),
                             ),
                           ),
                         ),
@@ -219,7 +258,11 @@ class _ProfileHeader extends StatelessWidget {
                     child: const CircleAvatar(
                       radius: 42,
                       backgroundColor: Colors.white,
-                      child: Icon(AppIcons.account, size: 42, color: AppColors.primary),
+                      child: Icon(
+                        AppIcons.account,
+                        size: 42,
+                        color: AppColors.primary,
+                      ),
                     ),
                   ),
                   const SizedBox(height: AppSpacing.md),
@@ -227,20 +270,25 @@ class _ProfileHeader extends StatelessWidget {
                   // (§5), so there is no real identity to show here.
                   Text(
                     'हर दिन',
-                    style: AppTextStyles.screenTitle(color: Colors.white).copyWith(
-                      fontSize: 22,
-                      shadows: [
-                        Shadow(
-                          color: AppColors.primaryDark.withValues(alpha: 0.3),
-                          blurRadius: 8,
+                    style: AppTextStyles.screenTitle(color: Colors.white)
+                        .copyWith(
+                          fontSize: 22,
+                          shadows: [
+                            Shadow(
+                              color: AppColors.primaryDark.withValues(
+                                alpha: 0.3,
+                              ),
+                              blurRadius: 8,
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
                   ),
                   const SizedBox(height: AppSpacing.xs),
                   Text(
                     'Har Din, Kuch Share Karo',
-                    style: AppTextStyles.secondary(color: Colors.white.withValues(alpha: 0.9)),
+                    style: AppTextStyles.secondary(
+                      color: Colors.white.withValues(alpha: 0.9),
+                    ),
                   ),
                 ],
               ),
@@ -462,25 +510,35 @@ class _ProfileMenuTile extends StatelessWidget {
                 Expanded(
                   child: Text(
                     label,
-                    style: AppTextStyles.body().copyWith(fontWeight: FontWeight.w500),
+                    style: AppTextStyles.body().copyWith(
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
                 if (trailingCount != null) ...[
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.lightAccent,
                       borderRadius: BorderRadius.circular(100),
                     ),
                     child: Text(
                       '$trailingCount',
-                      style: AppTextStyles.secondary(color: AppColors.primaryDark)
-                          .copyWith(fontWeight: FontWeight.w700),
+                      style: AppTextStyles.secondary(
+                        color: AppColors.primaryDark,
+                      ).copyWith(fontWeight: FontWeight.w700),
                     ),
                   ),
                   const SizedBox(width: AppSpacing.sm),
                 ],
-                const Icon(AppIcons.chevronRight, size: 14, color: AppColors.textSecondary),
+                const Icon(
+                  AppIcons.chevronRight,
+                  size: 14,
+                  color: AppColors.textSecondary,
+                ),
               ],
             ),
           ),
